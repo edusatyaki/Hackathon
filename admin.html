@@ -142,6 +142,10 @@
                                 <label class="form-label">Admin Email</label>
                                 <input type="email" id="newAdminEmail" class="form-input" placeholder="admin@example.com">
                             </div>
+                            <div class="form-group">
+                                <label class="form-label">Admin Password</label>
+                                <input type="password" id="newAdminPass" class="form-input" placeholder="Min 6 characters" minlength="6">
+                            </div>
 
                             <button class="btn btn-secondary btn-full" id="btnAddAdmin">
                                 <span class="material-symbols-outlined text-[18px]">add</span> Create Admin Account
@@ -710,13 +714,16 @@
 
         document.getElementById('btnAddAdmin').addEventListener('click', async () => {
             const email = document.getElementById('newAdminEmail').value.trim();
-            if(!email) return showToast('Email is required', 'error');
+            const pass = document.getElementById('newAdminPass').value;
+            if(!email || !pass) return showToast('Email and password are required', 'error');
+            if(pass.length < 6) return showToast('Password must be at least 6 characters', 'error');
 
-            const { error } = await supabase.from('admins').insert([{ email, role: 'admin' }]);
+            const { error } = await supabase.from('admins').insert([{ email, password: pass, role: 'admin' }]);
             if(error) return showToast(error.message, 'error');
             
-            showToast(`Admin privileges granted to ${email}! Ensure they are created in Supabase Auth.`);
+            showToast(`Admin ${email} created!`);
             document.getElementById('newAdminEmail').value = '';
+            document.getElementById('newAdminPass').value = '';
             loadAdminsTable();
         });
 
