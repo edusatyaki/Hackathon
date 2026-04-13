@@ -133,6 +133,17 @@
                         Don't have a team yet? <a href="register.html"
                             class="font-bold text-primary hover:underline">Register Here</a>
                     </div>
+
+                    <div class="flex items-center gap-4 my-6">
+                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
+                        <span class="text-[10px] text-outline uppercase tracking-widest font-bold">OR</span>
+                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
+                    </div>
+
+                    <button type="button" class="btn btn-ghost btn-full border-outline text-on-surface hover:bg-surface-container-high transition-all flex items-center justify-center gap-3" id="googleTeamBtn">
+                        <img src="https://www.google.com/favicon.ico" alt="Google" class="w-4 h-4">
+                        CONTINUE WITH GOOGLE
+                    </button>
                 </form>
 
                 <!-- ADMIN LOGIN FORM -->
@@ -155,20 +166,42 @@
                     </div>
                     <button type="submit" class="btn btn-secondary btn-lg btn-full mt-2" id="adminSubmitBtn">SYSTEM
                         ACCESS</button>
+
+                    <div class="flex items-center gap-4 my-6">
+                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
+                        <span class="text-[10px] text-outline uppercase tracking-widest font-bold">OR</span>
+                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
+                    </div>
+
+                    <button type="button" class="btn btn-ghost btn-full border-outline text-on-surface hover:bg-surface-container-high transition-all flex items-center justify-center gap-3" id="googleAdminBtn">
+                        <img src="https://www.google.com/favicon.ico" alt="Google" class="w-4 h-4">
+                        SYSTEM ACCESS WITH GOOGLE
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { supabase, getCurrentUser, isAdmin } from './config.js';
+        import { supabase, getCurrentUser, isAdmin, getCurrentTeam, signInWithGoogle } from './config.js';
 
         // Check if already logged in
         document.addEventListener('DOMContentLoaded', async () => {
             const user = await getCurrentUser();
             if (user) {
                 const admin = await isAdmin(user);
-                window.location.href = admin ? 'admin.html' : 'dashboard.html';
+                if (admin) {
+                    window.location.href = 'admin.html';
+                    return;
+                }
+                
+                const team = await getCurrentTeam(user);
+                if (team) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // User is logged in but has no team - send to register
+                    window.location.href = 'register.html';
+                }
             }
         });
 
@@ -263,6 +296,14 @@
                 btn.disabled = false;
                 btn.innerHTML = 'SYSTEM ACCESS';
             }
+        });
+
+        // Google Auth Click Handlers
+        [document.getElementById('googleTeamBtn'), document.getElementById('googleAdminBtn')].forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const { error } = await signInWithGoogle();
+                if (error) showError(error.message);
+            });
         });
     </script>
     <footer

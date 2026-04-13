@@ -131,6 +131,17 @@
                         CREATE TEAM & REGISTER
                     </button>
                 </div>
+
+                <div class="flex items-center gap-4 my-2">
+                    <div class="h-[1px] bg-outline-variant flex-grow"></div>
+                    <span class="text-[10px] text-outline uppercase tracking-widest font-bold">OR</span>
+                    <div class="h-[1px] bg-outline-variant flex-grow"></div>
+                </div>
+
+                <button type="button" class="btn btn-ghost btn-full border-outline text-on-surface hover:bg-surface-container-high transition-all flex items-center justify-center gap-3" id="googleRegBtn">
+                    <img src="https://www.google.com/favicon.ico" alt="Google" class="w-4 h-4">
+                    REGISTER WITH GOOGLE
+                </button>
             </form>
             </div>
         </div>
@@ -150,9 +161,33 @@
 
     <!-- Registration Logic -->
     <script type="module">
-        import { supabase, redirectIfAuth } from './config.js';
+        import { supabase, signInWithGoogle, getCurrentUser } from './config.js';
 
-        redirectIfAuth(); // If already logged in, skip register
+        // Check for existing session (e.g. from Google)
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await getCurrentUser();
+            if (user) {
+                // If they are redirected here but have a team, send them back to index/dashboard
+                // (Already handled in index.html, but safe here too)
+                
+                // Pre-fill lead info from Google/Auth session
+                if (user.email) {
+                    document.getElementById('leadEmail').value = user.email;
+                    document.getElementById('leadEmail').disabled = true;
+                    // Also hide password fields as they are handled by Google
+                    document.getElementById('teamPassword').required = false;
+                    document.getElementById('teamPasswordConfirm').required = false;
+                    document.getElementById('teamPassword').closest('.grid').classList.add('hidden');
+                }
+                if (user.user_metadata?.name) {
+                    document.getElementById('leadName').value = user.user_metadata.name;
+                }
+                
+                // Change button text
+                document.getElementById('submitBtn').textContent = 'COMPLETE REGISTRATION';
+                document.getElementById('googleRegBtn').classList.add('hidden');
+            }
+        });
 
         const membersContainer = document.getElementById('membersContainer');
         const addMemberBtn = document.getElementById('addMemberBtn');
@@ -252,14 +287,22 @@
             btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> PROCESSING...';
 
             try {
-                // 1. Sign up Lead in Supabase Auth (We use Auth for Leads)
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: leadEmail,
-                    password: password,
-                    options: { data: { name: leadName, role: 'student' } }
-                });
+                let user;
+                const existingUser = await getCurrentUser();
 
-                if (authError) throw authError;
+                if (!existingUser) {
+                    // 1. Sign up Lead in Supabase Auth (We use Auth for Leads)
+                    const { data: authData, error: authError } = await supabase.auth.signUp({
+                        email: leadEmail,
+                        password: password,
+                        options: { data: { name: leadName, role: 'student' } }
+                    });
+
+                    if (authError) throw authError;
+                    user = authData.user;
+                } else {
+                    user = existingUser;
+                }
 
                 // 2. Insert into `teams`
                 // Since user might need to confirm email if required by Supabase, 
@@ -287,7 +330,9 @@
 
                 // Success! 
                 // Check if session exists. If not, they likely need to verify email.
-                if (authData.session) {
+                // (For Google users, session always exists here)
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
                     window.location.href = 'dashboard.html';
                 } else {
                     document.getElementById('successModal').classList.add('open');
@@ -297,7 +342,16 @@
                 errorMsg.textContent = err.message || "An error occurred during registration.";
                 errorAlert.classList.remove('hidden');
                 btn.disabled = false;
-                btn.innerHTML = 'CREATE TEAM & REGISTER';
+                btn.innerHTML = existingUser ? 'COMPLETE REGISTRATION' : 'CREATE TEAM & REGISTER';
+            }
+        });
+
+        // Google Registration
+        document.getElementById('googleRegBtn').addEventListener('click', async () => {
+            const { error } = await signInWithGoogle();
+            if (error) {
+                errorMsg.textContent = error.message;
+                errorAlert.classList.remove('hidden');
             }
         });
 

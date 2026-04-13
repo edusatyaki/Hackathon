@@ -71,6 +71,14 @@ class MockSupabaseClient {
                 }
                 return { error: { message: "Invalid credentials" } };
             },
+            signInWithOAuth: async ({ provider }) => {
+                console.log(`Mock sign in with ${provider}`);
+                // In mock mode, we just simulate a successful login with a dummy user
+                const user = { id: uuidv4(), email: 'mockuser@google.com', user_metadata: { name: 'Mock Google User' } };
+                localStorage.setItem('hf_mock_auth_user', JSON.stringify(user));
+                window.location.reload();
+                return { data: {}, error: null };
+            },
             signOut: async () => {
                 localStorage.setItem('hf_mock_auth_user', null);
                 return { error: null };
@@ -305,6 +313,20 @@ export async function redirectIfAuth() {
         const admin = await isAdmin(user);
         window.location.href = admin ? 'admin.html' : 'dashboard.html';
     }
+}
+
+export async function signInWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.origin + window.location.pathname,
+            queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+            },
+        },
+    });
+    return { data, error };
 }
 
 // ============================================================
