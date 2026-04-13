@@ -79,7 +79,10 @@
                         <span class="material-symbols-outlined text-secondary-fixed">groups</span>
                         <h3 class="text-title text-primary">Your Squad</h3>
                     </div>
-                    <button class="btn btn-secondary btn-sm" onclick="openModal('manageRosterModal')"><span class="material-symbols-outlined text-[16px] mr-1">edit</span> Manage Roster</button>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="btn btn-ghost btn-sm" onclick="openModal('settingsModal')"><span class="material-symbols-outlined text-[16px] mr-1">settings</span> Settings</button>
+                        <button class="btn btn-secondary btn-sm" onclick="openModal('manageRosterModal')"><span class="material-symbols-outlined text-[16px] mr-1">edit</span> Manage Roster</button>
+                    </div>
                 </div>
                 <div id="rosterContainer" class="flex flex-wrap gap-4">
                     <div class="spinner border-t-secondary-fixed"></div>
@@ -110,6 +113,28 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-ghost w-full" onclick="closeModal('manageRosterModal')">Done</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MODAL: SETTINGS (PASSWORD CHANGE) -->
+        <div class="modal-overlay" id="settingsModal">
+            <div class="modal w-[400px]">
+                <div class="modal-header">
+                    <h3 class="modal-title">Account Settings</h3>
+                    <button class="modal-close" onclick="closeModal('settingsModal')"><span class="material-symbols-outlined">close</span></button>
+                </div>
+                <div class="modal-body space-y-4">
+                    <div id="settingsError" class="hidden bg-error-container text-on-error-container p-3 rounded-lg text-xs mb-4"></div>
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" id="newPass" class="form-input" placeholder="Min 6 characters" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" id="confirmPass" class="form-input" placeholder="Re-enter password">
+                    </div>
+                    <button class="btn btn-primary btn-full" id="btnUpdatePassword">Update Password</button>
                 </div>
             </div>
         </div>
@@ -453,6 +478,45 @@
                 window.location.href = `play.html?id=${hackathonId}`;
             }
         };
+
+        // PASSWORD CHANGE LOGIC
+        document.getElementById('btnUpdatePassword').addEventListener('click', async () => {
+            const np = document.getElementById('newPass').value;
+            const cp = document.getElementById('confirmPass').value;
+            const errDiv = document.getElementById('settingsError');
+            errDiv.classList.add('hidden');
+
+            if(np.length < 6) {
+                errDiv.textContent = "Password must be at least 6 characters.";
+                errDiv.classList.remove('hidden');
+                return;
+            }
+            if(np !== cp) {
+                errDiv.textContent = "Passwords do not match.";
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            const btn = document.getElementById('btnUpdatePassword');
+            btn.disabled = true;
+            btn.textContent = "Updating...";
+
+            const { error } = await supabase.auth.updateUser({ password: np });
+            
+            if(error) {
+                errDiv.textContent = error.message;
+                errDiv.classList.remove('hidden');
+                btn.disabled = false;
+                btn.textContent = "Update Password";
+            } else {
+                alert("Password updated successfully!");
+                closeModal('settingsModal');
+                btn.disabled = false;
+                btn.textContent = "Update Password";
+                document.getElementById('newPass').value = '';
+                document.getElementById('confirmPass').value = '';
+            }
+        });
 
     </script>
     <footer class="w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 border-t border-outline-variant/30 text-xs tracking-wider uppercase bg-surface-container-low text-on-surface-variant font-label">
