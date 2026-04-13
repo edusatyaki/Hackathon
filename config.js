@@ -8,7 +8,7 @@
 // ============================================================
 
 const SUPABASE_URL = 'https://izvoyidkvvsexorzudli.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_tMreYBhIHHU8VuB9nDCcBA_WSn8tHSk';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6dm95aWRrdnZzZXhvcnp1ZGxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNTkwOTUsImV4cCI6MjA5MTYzNTA5NX0.es_whmuEHMkW713330lqzjfLmN0qLh54dvBJxjlCJ6o';
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
