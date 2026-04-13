@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hackfest | Active Hunt</title>
-    <link rel="stylesheet" href="dist/output.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: "var(--primary)", "primary-container": "var(--primary-container)" } } } }
+    </script>
     <style>
         .game-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
         @media(min-width: 1024px) { .game-grid { grid-template-columns: 7fr 5fr; } }
@@ -120,7 +124,7 @@
     </main>
 
     <script type="module">
-        import { supabase } from './config.js';
+        import { supabase, requireAuth, getCurrentTeam } from './config.js';
 
         let user, team;
         let hackathonId;
@@ -152,19 +156,11 @@
         };
 
         document.addEventListener('DOMContentLoaded', async () => {
-            user = JSON.parse(sessionStorage.getItem('hf_user'));
-            if (!user) { window.location.href = 'index.html'; return; }
-
-            // Fetch team from DB
-            const { data: teamData, error: tErr } = await supabase
-                .from('teams')
-                .select('*, team_members(*)')
-                .eq('lead_email', user.email)
-                .single();
-
-            if (tErr || !teamData) { alert("Team error"); return window.location.href = 'index.html'; }
-            team = teamData;
-
+            user = await requireAuth();
+            if(!user) return;
+            team = await getCurrentTeam(user);
+            if(!team) { alert("Team error"); return window.location.href = 'index.html'; }
+            
             ui.navTeamName.innerHTML = `<span class="material-symbols-outlined text-[16px] mr-1 align-bottom">group</span>${team.team_name}`;
 
             const params = new URLSearchParams(window.location.search);

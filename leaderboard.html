@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hackfest | Leaderboard</title>
-    <link rel="stylesheet" href="dist/output.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: "var(--primary)", "primary-container": "var(--primary-container)" } } } }
+    </script>
 </head>
 <body class="bg-surface text-on-surface min-h-screen flex flex-col">
 
@@ -83,7 +87,7 @@
     </main>
 
     <script type="module">
-        import { supabase, formatDuration } from './config.js';
+        import { supabase, getCurrentUser, isAdmin, formatDuration } from './config.js';
 
         let user, adminFlag = false;
         let hackathons = [];
@@ -92,15 +96,15 @@
         let fullData = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
-            user = JSON.parse(sessionStorage.getItem('hf_user'));
+            user = await getCurrentUser();
             if(user) {
-                adminFlag = user.role === 'admin';
+                adminFlag = await isAdmin(user);
                 document.getElementById('navRoleLabel').textContent = adminFlag ? "Admin" : "Student";
                 if(adminFlag) document.getElementById('navDash').href = "admin.html";
             }
 
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                sessionStorage.removeItem('hf_user');
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+                await supabase.auth.signOut();
                 window.location.href = 'index.html';
             });
 

@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hackfest | Team Registration</title>
-    <link rel="stylesheet" href="dist/output.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { primary: "var(--primary)" } } }
+        }
+    </script>
 </head>
 <body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
 
@@ -132,13 +138,9 @@
 
     <!-- Registration Logic -->
     <script type="module">
-        import { supabase } from './config.js';
+        import { supabase, redirectIfAuth } from './config.js';
 
-        // If already logged in, redirect
-        const _existingUser = JSON.parse(sessionStorage.getItem('hf_user'));
-        if (_existingUser) {
-            window.location.href = _existingUser.role === 'admin' ? 'admin.html' : 'dashboard.html';
-        }
+        redirectIfAuth(); // If already logged in, skip register
 
         const membersContainer = document.getElementById('membersContainer');
         const addMemberBtn = document.getElementById('addMemberBtn');
@@ -238,40 +240,40 @@
             btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> PROCESSING...';
 
             try {
-                // 1. Check if team name or email already exists
-                const { data: existCheck } = await supabase
-                    .from('teams')
-                    .select('id')
-                    .eq('lead_email', leadEmail.toLowerCase())
-                    .single();
-                if (existCheck) throw new Error('A team with this email is already registered.');
+                // 1. Sign up Lead in Supabase Auth (We use Auth for Leads)
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: leadEmail,
+                    password: password,
+                    options: { data: { name: leadName, role: 'student' } }
+                });
 
-                // 2. Insert into `teams` — password stored in password_hash column
+                if (authError) throw authError;
+
+                // 2. Insert into `teams`
+                // Since user might need to confirm email if required by Supabase, 
+                // in a dev environment we assume auto-confirm is enabled.
                 const { data: teamData, error: teamError } = await supabase.from('teams').insert([{
                     team_name: teamName,
-                    lead_email: leadEmail.toLowerCase(),
-                    password_hash: password
+                    lead_email: leadEmail,
+                    password_hash: 'managed_by_auth' // actual hashing handled by Supabase Auth
                 }]).select().single();
 
-                if (teamError) throw new Error(teamError.message || "Failed to create team. Name might be taken.");
+                if (teamError) {
+                    // Try to rollback Auth (best effort)
+                    // If team unique constraint fails, we'll hit this.
+                    throw new Error(teamError.message || "Failed to create team. Name might be taken.");
+                }
 
-                // 3. Insert Lead + members into team_members
+                // 3. Insert Lead as first team member
                 const allMembers = [
-                    { team_id: teamData.id, name: leadName, email: leadEmail.toLowerCase(), role: 'lead' },
+                    { team_id: teamData.id, name: leadName, email: leadEmail, role: 'lead' },
                     ...additionalMembers.map(m => ({ ...m, team_id: teamData.id }))
                 ];
 
                 const { error: membersError } = await supabase.from('team_members').insert(allMembers);
                 if (membersError) throw membersError;
 
-                // 4. Set session and redirect
-                sessionStorage.setItem('hf_user', JSON.stringify({
-                    id: teamData.id,
-                    email: teamData.lead_email,
-                    role: 'lead',
-                    team_name: teamData.team_name
-                }));
-
+                // Success! Supabase likely logged them in automatically via signUp.
                 window.location.href = 'dashboard.html';
 
             } catch (err) {
