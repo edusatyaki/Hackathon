@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackfest | Active Hunt</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: "var(--primary)", "primary-container": "var(--primary-container)" } } } }
+    </script>
+    <style>
+        .game-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        @media(min-width: 1024px) { .game-grid { grid-template-columns: 7fr 5fr; } }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+    <nav class="nav-bar">
+        <a href="dashboard.html" class="nav-brand flex items-center gap-2">
+            <span class="material-symbols-outlined text-outline">arrow_back</span>
+            Hackfest
+        </a>
+        <div class="nav-actions">
+            <span id="navTeamName" class="text-sm font-bold text-on-surface-variant mr-2"></span>
+        </div>
+    </nav>
+
+    <!-- Page Loader during init -->
+    <div id="pageLoader" class="page-loader">
+        <div class="spinner"></div>
+        <p class="font-label text-xs tracking-widest uppercase text-primary">Establishing Connection...</p>
+    </div>
+
+    <!-- Win Screen (Hidden by default) -->
+    <div id="winScreen" class="win-screen hidden">
+        <div class="win-badge">
+            <span class="material-symbols-outlined text-white text-6xl">emoji_events</span>
+        </div>
+        <h1 class="text-display text-white">Hunt Completed!</h1>
+        <p class="text-white/80 max-w-md mx-auto text-lg">Your team has successfully navigated all architectural challenges. The logs are secured.</p>
+        <a href="leaderboard.html" class="btn bg-white text-primary mt-4 font-bold tracking-widest">VIEW FINAL STANDINGS</a>
+    </div>
+
+    <main class="page-main hidden" id="gameMain">
+        <!-- Header -->
+        <header class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center mb-8">
+            <div class="card p-5">
+                <p class="stat-label mb-1">Round Progress</p>
+                <div class="flex items-center gap-3">
+                    <span class="text-headline text-primary text-xl" id="roundTitle">Round --</span>
+                    <div class="flex-grow progress-bar">
+                        <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card p-5 flex flex-col justify-center text-center">
+                <p class="stat-label mb-1">Active Hackathon</p>
+                <h3 class="text-title text-primary truncate" id="hackathonName">Loading...</h3>
+            </div>
+
+            <div class="card p-5 flex flex-col justify-center text-center text-primary relative overflow-hidden">
+                <p class="stat-label mb-1">Overall Rank</p>
+                <h3 class="text-headline text-primary" id="playRank">#—</h3>
+            </div>
+            
+            <div class="card p-5 bg-primary-container text-white relative overflow-hidden">
+                <div class="relative z-10 flex justify-between items-end gap-2">
+                    <div>
+                        <p class="stat-label text-white/80 mb-1 text-[10px]">Time Left</p>
+                        <div class="text-2xl font-bold tracking-tighter leading-none" id="timeLeft">00:00:00</div>
+                    </div>
+                    <div class="text-right">
+                        <p class="stat-label text-white/80 mb-1 text-[10px]">Elapsed</p>
+                        <div class="text-base font-mono tracking-tighter leading-none" id="timeElapsed">00:00:00</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <div class="game-grid items-start">
+            
+            <!-- Left: Problem Description -->
+            <div class="flex-col gap-6" id="questionArea">
+                <section class="card p-8 shadow-md border border-outline-variant/30 relative">
+                    <h2 class="text-display text-primary mb-6" id="qTitle">Decrypting...</h2>
+                    <div class="text-body text-on-surface leading-loose" id="qDesc">
+                        <div class="spinner"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right: Submit Form -->
+            <div class="flex-col gap-6 sticky" style="top: 100px;">
+                <section class="card p-8 border border-primary/20 shadow-lg">
+                    <h3 class="text-title text-primary mb-6">Submit Execution Key</h3>
+                    
+                    <div id="feedbackAlert" class="hidden answer-result mb-6">
+                        <span class="material-symbols-outlined"></span>
+                        <span id="feedbackText"></span>
+                    </div>
+
+                    <form id="submitForm" class="space-y-6">
+                        <div class="form-group">
+                            <label class="form-label flex justify-between">
+                                Solution Data
+                                <span class="text-xs font-normal opacity-60 normal-case tracking-normal" id="qHint"></span>
+                            </label>
+                            <input type="text" id="answerInput" class="form-input text-lg font-mono p-4 bg-surface-container" placeholder="Enter solution..." required autocomplete="off">
+                        </div>
+                        
+                        <button type="submit" id="submitBtn" class="btn btn-primary btn-lg btn-full group">
+                            EXECUTE SEQUENCE
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">terminal</span>
+                        </button>
+                    </form>
+                </section>
+            </div>
+
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase, requireAuth, getCurrentTeam } from './config.js';
+
+        let user, team;
+        let hackathonId;
+        let hackathonData;
+        let progressData;
+        let roundsData = [];
+        let currentQuestion = null;
+        let timerInterval;
+
+        const ui = {
+            loader: document.getElementById('pageLoader'),
+            main: document.getElementById('gameMain'),
+            winScreen: document.getElementById('winScreen'),
+            roundTitle: document.getElementById('roundTitle'),
+            progressBar: document.getElementById('progressBar'),
+            hackathonName: document.getElementById('hackathonName'),
+            timeLeft: document.getElementById('timeLeft'),
+            timeElapsed: document.getElementById('timeElapsed'),
+            playRank: document.getElementById('playRank'),
+            qTitle: document.getElementById('qTitle'),
+            qDesc: document.getElementById('qDesc'),
+            qHint: document.getElementById('qHint'),
+            submitForm: document.getElementById('submitForm'),
+            answerInput: document.getElementById('answerInput'),
+            submitBtn: document.getElementById('submitBtn'),
+            feedbackAlert: document.getElementById('feedbackAlert'),
+            feedbackText: document.getElementById('feedbackText'),
+            navTeamName: document.getElementById('navTeamName')
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            user = await requireAuth();
+            if(!user) return;
+            team = await getCurrentTeam(user);
+            if(!team) { alert("Team error"); return window.location.href = 'index.html'; }
+            
+            ui.navTeamName.innerHTML = `<span class="material-symbols-outlined text-[16px] mr-1 align-bottom">group</span>${team.team_name}`;
+
+            const params = new URLSearchParams(window.location.search);
+            hackathonId = params.get('id');
+            if(!hackathonId) {
+                alert("No hackathon selected.");
+                return window.location.href = 'dashboard.html';
+            }
+
+            await initGame();
+        });
+
+        async function initGame() {
+            try {
+                // 1. Get Hackathon Details
+                const { data: hData, error: hErr } = await supabase.from('hackathons').select('*').eq('id', hackathonId).single();
+                if(hErr) throw hErr;
+                hackathonData = hData;
+                ui.hackathonName.textContent = hData.name;
+
+                // 2. Get Total Rounds for this hackathon
+                const { data: rData, error: rErr } = await supabase.from('rounds').select('*').eq('hackathon_id', hackathonId).order('round_number', { ascending: true });
+                if(rErr) throw rErr;
+                roundsData = rData;
+
+                // 3. Get Team Progress
+                const { data: pData, error: pErr } = await supabase.from('progress').select('*').eq('team_id', team.id).eq('hackathon_id', hackathonId).single();
+                if(pErr) throw pErr;
+                progressData = pData;
+
+                // Start Timer
+                startTimer(new Date(progressData.started_at));
+
+                // Start Rank checking in background
+                fetchPlayRank();
+
+                // 4. Load Current Round
+                await loadRound(progressData.current_round);
+
+            } catch (err) {
+                console.error(err);
+                alert("Failed to initialize game environment.");
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        async function loadRound(roundNum) {
+            ui.loader.classList.remove('hidden');
+            ui.main.classList.add('hidden');
+            ui.feedbackAlert.classList.add('hidden');
+            ui.answerInput.value = '';
+
+            const totalRounds = roundsData.length;
+            
+            // Check Win Condition
+            if (roundNum > totalRounds) {
+                ui.loader.classList.add('hidden');
+                ui.winScreen.classList.remove('hidden');
+                clearInterval(timerInterval);
+                updateTimers(new Date(progressData.started_at)); // Force final update
+                fireConfettiRain();
+                setTimeout(() => {
+                    window.location.href = `leaderboard.html?id=${hackathonId}`;
+                }, 4000);
+                return;
+            }
+
+            ui.roundTitle.textContent = `Round ${String(roundNum).padStart(2,'0')}`;
+            const pct = Math.round(((roundNum - 1) / totalRounds) * 100);
+            ui.progressBar.style.width = `${pct}%`;
+
+            const currentRoundData = roundsData.find(r => r.round_number === roundNum);
+            if(!currentRoundData) throw new Error("Round configuration missing.");
+
+            // Fetch Question (Remember: RLS allows select, but we're pulling the answer too. 
+            // In a strict prod env without Edge functions, we rely on RLS hiding answer or using validate_answer).
+            // Here, we'll fetch the question text.
+            const { data: qData, error: qErr } = await supabase.from('questions').select('id, title, description, answer_type').eq('round_id', currentRoundData.id).single();
+            if(qErr) throw qErr;
+            
+            currentQuestion = qData;
+            currentQuestion.round_id = currentRoundData.id;
+
+            ui.qTitle.textContent = qData.title;
+            
+            // Format line breaks
+            ui.qDesc.innerHTML = `<div class="prose max-w-none">${qData.description.replace(/\ng/,'<br>')}</div>`;
+            
+            ui.qHint.textContent = qData.answer_type ? `Format: ${qData.answer_type.toUpperCase()}` : '';
+            ui.answerInput.type = (qData.answer_type === 'integer' || qData.answer_type === 'decimal') ? 'number' : 'text';
+            if(qData.answer_type === 'decimal') ui.answerInput.step = 'any';
+
+            ui.loader.classList.add('hidden');
+            ui.main.classList.remove('hidden');
+        }
+
+        ui.submitForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const answer = ui.answerInput.value.trim();
+            if(!answer) return;
+
+            ui.submitBtn.disabled = true;
+            ui.submitBtn.innerHTML = '<span class="material-symbols-outlined justify-center mx-auto animate-spin">refresh</span>';
+            ui.feedbackAlert.classList.add('hidden');
+
+            try {
+                // Call Supabase Postgres Function
+                const { data: isCorrect, error } = await supabase.rpc('validate_answer', {
+                    p_team_id: team.id,
+                    p_hackathon_id: hackathonId,
+                    p_round_id: currentQuestion.round_id,
+                    p_answer: answer
+                });
+
+                if (error) throw error;
+
+                ui.feedbackAlert.classList.remove('hidden', 'correct', 'wrong');
+                const icon = ui.feedbackAlert.querySelector('.material-symbols-outlined');
+
+                if (isCorrect) {
+                    ui.feedbackAlert.classList.add('correct');
+                    icon.textContent = 'check_circle';
+                    ui.feedbackText.textContent = 'Execution successful. Access granted.';
+                    
+                    fireConfetti();
+                    
+                    // Increment local progress and load next round
+                    progressData.current_round += 1;
+                    progressData.last_updated = new Date().toISOString(); // local update for accurate completion timer
+                    setTimeout(() => { loadRound(progressData.current_round); }, 1500);
+
+                } else {
+                    ui.feedbackAlert.classList.add('wrong');
+                    icon.textContent = 'cancel';
+                    ui.feedbackText.textContent = 'Execution failed. Incorrect sequence.';
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Validation error. Check console.");
+            } finally {
+                ui.submitBtn.disabled = false;
+                ui.submitBtn.innerHTML = `EXECUTE SEQUENCE <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">terminal</span>`;
+            }
+        });
+
+        async function fetchPlayRank() {
+            try {
+                const { data } = await supabase.from('progress').select('*, teams(team_name)').eq('hackathon_id', hackathonId);
+                if(!data) return;
+                
+                let ranks = data.map(d => {
+                   d.time_taken_ms = new Date(d.last_updated) - new Date(d.started_at);
+                   return d;
+                });
+                ranks.sort((a, b) => {
+                    if(b.current_round !== a.current_round) return b.current_round - a.current_round;
+                    return a.time_taken_ms - b.time_taken_ms;
+                });
+
+                const myIndex = ranks.findIndex(r => r.team_id === team.id);
+                if(myIndex !== -1) {
+                    ui.playRank.textContent = `#${myIndex + 1}`;
+                }
+            } catch(e) {} // silently fail
+        }
+
+        function updateTimers(startTimeDate) {
+            const now = new Date();
+            const totalRounds = roundsData.length;
+            
+            // Elapsed Time
+            // If finished, lock at last_updated
+            const isCompleted = progressData.current_round > totalRounds;
+            let endRef = isCompleted ? new Date(progressData.last_updated) : now;
+            const diffElapsed = endRef - startTimeDate;
+            if(diffElapsed >= 0) ui.timeElapsed.textContent = formatMs(diffElapsed);
+            
+            // Time Left
+            const endH = new Date(hackathonData.end_time);
+            const diffLeft = endH - now;
+            if(diffLeft > 0) {
+                ui.timeLeft.textContent = formatMs(diffLeft);
+            } else {
+                ui.timeLeft.textContent = "00:00:00";
+            }
+        }
+
+        function formatMs(ms) {
+            const h = Math.floor(ms / 3600000);
+            const m = Math.floor((ms % 3600000) / 60000);
+            const s = Math.floor((ms % 60000) / 1000);
+            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        function startTimer(startTimeDate) {
+            timerInterval = setInterval(() => {
+                updateTimers(startTimeDate);
+            }, 1000);
+        }
+
+        function fireConfetti() {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#063669', '#a7c8ff', '#ffffff'] });
+        }
+
+        function fireConfettiRain() {
+            const duration = 3000;
+            const end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#063669', '#a7c8ff'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#274e82', '#ffffff'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+    </script>
+    <footer class="w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 border-t border-outline-variant/30 text-xs tracking-wider uppercase bg-surface-container-low text-on-surface-variant font-label">
+        <div class="mb-4 md:mb-0">
+            © 2026 Hackfest. All rights reserved.
+        </div>
+        <div class="flex gap-6">
+            <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+            <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+            <a href="#" class="hover:text-primary transition-colors">Contact Support</a>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#434653",
+                    "on-tertiary-fixed": "#380d00",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "outline-variant": "#c3c6d5",
+                    "surface-variant": "#e0e3e5",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "primary-fixed-dim": "#a7c8ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffaa8a",
+                    "secondary": "#515f74",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#3a5f94",
+                    "on-primary-container": "#9cc0fb",
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#8b2e01",
+                    "tertiary-fixed": "#ffdbcf",
+                    "surface-dim": "#d8dadc",
+                    "secondary-fixed": "#d5e3fc",
+                    "on-background": "#191c1e",
+                    "surface-container-highest": "#e0e3e5",
+                    "secondary-container": "#d5e3fc",
+                    "on-surface": "#191c1e",
+                    "inverse-surface": "#2d3133",
+                    "on-primary-fixed-variant": "#1f477b",
+                    "surface": "#f7f9fb",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eceef0",
+                    "on-tertiary-fixed-variant": "#802900",
+                    "on-secondary-container": "#57657a",
+                    "outline": "#737784",
+                    "surface-bright": "#f7f9fb",
+                    "on-error": "#ffffff",
+                    "tertiary": "#651f00",
+                    "on-primary-fixed": "#001b3c",
+                    "primary": "#063669",
+                    "surface-container-high": "#e6e8ea",
+                    "primary-container": "#274e82",
+                    "surface-container-low": "#f2f4f6",
+                    "background": "#f7f9fb",
+                    "error-container": "#ffdad6",
+                    "primary-fixed": "#d5e3ff",
+                    "inverse-primary": "#a7c8ff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "inverse-on-surface": "#eff1f3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .headline-font { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-slate-50 dark:bg-slate-900 flex justify-between items-center w-full px-8 py-4 max-w-full mx-auto font-manrope tracking-tight font-bold docked full-width top-0">
+<div class="text-xl font-black text-blue-900 dark:text-blue-100">Hackfest</div>
+<nav class="hidden md:flex gap-8">
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors" href="#">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors" href="#">Hackathons</a>
+<a class="text-blue-900 dark:text-blue-400 border-b-2 border-blue-900 dark:border-blue-400 pb-1 hover:text-blue-700 dark:hover:text-blue-300 transition-colors" href="#">Leaderboard</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75">Profile</button>
+<button class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75">Logout</button>
+</div>
+</header>
+<main class="flex-grow w-full max-w-7xl mx-auto px-8 py-12">
+<!-- Hero Header Section -->
+<section class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="flex h-2.5 w-2.5 rounded-full bg-primary relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+</span>
+<span class="font-label text-xs tracking-wider uppercase text-primary font-semibold">Live Results</span>
+</div>
+<h1 class="headline-font text-5xl font-extrabold text-primary tracking-tight mb-2">Treasure Hunt Elite</h1>
+<p class="text-on-surface-variant max-w-xl">Architectural logic dictates the pace. Monitor team progression across global nodes in real-time. High-density performance tracking enabled.</p>
+</div>
+<div class="relative w-full md:w-80 group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-11 pr-4 text-on-surface focus:ring-2 focus:ring-surface-tint focus:bg-surface-container-lowest transition-all" placeholder="Search for teams..." type="text"/>
+</div>
+</section>
+<!-- Top 3 Podium (Subtle Architectural Accents) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<!-- Rank 2 -->
+<div class="bg-surface-container-low p-6 rounded-xl flex flex-col items-center justify-center text-center order-2 md:order-1 border-b-4 border-outline-variant">
+<span class="font-label text-xs tracking-widest uppercase text-on-surface-variant mb-4">Rank 02</span>
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant" data-icon="shield">shield</span>
+</div>
+<h3 class="headline-font text-xl font-bold text-primary">CyberSentinels</h3>
+<p class="text-on-surface-variant text-sm mb-4">Round 08/10</p>
+<div class="bg-surface-container-highest px-4 py-1 rounded-full text-xs font-bold text-primary">04:12:45</div>
+</div>
+<!-- Rank 1 -->
+<div class="bg-primary-container p-8 rounded-xl flex flex-col items-center justify-center text-center order-1 md:order-2 transform md:-translate-y-4 shadow-xl shadow-primary/10">
+<span class="font-label text-xs tracking-widest uppercase text-on-primary-container mb-4">Rank 01</span>
+<div class="w-20 h-20 rounded-full bg-primary flex items-center justify-center mb-4 ring-4 ring-on-primary-container/20">
+<span class="material-symbols-outlined text-4xl text-on-primary" data-icon="workspace_premium" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<h3 class="headline-font text-2xl font-black text-on-primary-container">BinaryProphets</h3>
+<p class="text-on-primary-container/80 text-sm mb-4">Round 09/10</p>
+<div class="bg-primary px-6 py-2 rounded-full text-sm font-bold text-on-primary">03:58:12</div>
+</div>
+<!-- Rank 3 -->
+<div class="bg-surface-container-low p-6 rounded-xl flex flex-col items-center justify-center text-center order-3 md:order-3 border-b-4 border-tertiary-fixed-dim/30">
+<span class="font-label text-xs tracking-widest uppercase text-on-surface-variant mb-4">Rank 03</span>
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant" data-icon="token">token</span>
+</div>
+<h3 class="headline-font text-xl font-bold text-primary">NullPointers</h3>
+<p class="text-on-surface-variant text-sm mb-4">Round 08/10</p>
+<div class="bg-surface-container-highest px-4 py-1 rounded-full text-xs font-bold text-primary">04:22:10</div>
+</div>
+</section>
+<!-- High-Density Leaderboard Table -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-highest">
+<th class="px-8 py-4 font-label text-xs tracking-widest uppercase text-on-surface-variant">Rank</th>
+<th class="px-6 py-4 font-label text-xs tracking-widest uppercase text-on-surface-variant">Team Name</th>
+<th class="px-6 py-4 font-label text-xs tracking-widest uppercase text-on-surface-variant">Current Round</th>
+<th class="px-6 py-4 font-label text-xs tracking-widest uppercase text-on-surface-variant text-right">Total Time Taken</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-5 text-primary font-bold">04</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="groups">groups</span>
+</div>
+<span class="font-semibold text-on-surface">DataDrifters</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Round 07</td>
+<td class="px-6 py-5 text-right font-mono font-medium text-primary">04:45:12</td>
+</tr>
+<tr class="bg-surface-container-low hover:bg-surface-container transition-colors group">
+<td class="px-8 py-5 text-primary font-bold">05</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="code">code</span>
+</div>
+<span class="font-semibold text-on-surface">LogicKnights</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Round 07</td>
+<td class="px-6 py-5 text-right font-mono font-medium text-primary">04:52:33</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-5 text-primary font-bold">06</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="terminal">terminal</span>
+</div>
+<span class="font-semibold text-on-surface">CloudRunners</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Round 06</td>
+<td class="px-6 py-5 text-right font-mono font-medium text-primary">05:01:09</td>
+</tr>
+<tr class="bg-surface-container-low hover:bg-surface-container transition-colors group">
+<td class="px-8 py-5 text-primary font-bold">07</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="memory">memory</span>
+</div>
+<span class="font-semibold text-on-surface">BitBusters</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Round 06</td>
+<td class="px-6 py-5 text-right font-mono font-medium text-primary">05:15:44</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-5 text-primary font-bold">08</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="hub">hub</span>
+</div>
+<span class="font-semibold text-on-surface">ScriptSlayers</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Round 05</td>
+<td class="px-6 py-5 text-right font-mono font-medium text-primary">05:22:11</td>
+</tr>
+</tbody>
+</table>
+<div class="px-8 py-6 bg-surface-container-low flex justify-between items-center">
+<span class="text-xs text-on-surface-variant uppercase font-label tracking-widest">Showing 08 of 142 teams</span>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container-highest text-primary hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-100 dark:bg-slate-950 w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 border-t border-transparent font-inter text-xs tracking-wider uppercase">
+<p class="text-slate-500 dark:text-slate-400">© 2024 Hackfest Architectural Logic. All rights reserved.</p>
+<div class="flex gap-6 mt-4 md:mt-0">
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors opacity-80 hover:opacity-100" href="#">Contact Support</a>
+</div>
+</footer>
+</body></html>

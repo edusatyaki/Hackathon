@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackfest | Team Registration</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { primary: "var(--primary)" } } }
+        }
+    </script>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+
+    <header class="nav-bar">
+        <a href="index.html" class="nav-brand">Hackfest</a>
+    </header>
+
+    <div class="flex-grow flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden">
+        
+        <!-- Background Orbs -->
+        <div class="absolute inset-0 z-0 opacity-10 pointer-events-none">
+            <div class="absolute top-[-10%] right-[-5%] w-[40rem] h-[40rem] rounded-full bg-primary-container blur-[100px]"></div>
+            <div class="absolute bottom-[-10%] left-[-5%] w-[40rem] h-[40rem] rounded-full bg-secondary-fixed blur-[100px]"></div>
+        </div>
+
+        <div class="z-10 w-full max-w-6xl grid grid-cols-1 lg:grid-cols-5 overflow-hidden rounded-[1.5rem] bg-surface-container-lowest shadow-xl">
+            
+            <!-- Left Hero -->
+            <div class="hidden lg:flex lg:col-span-2 hero-bg p-10 flex-col justify-between text-on-primary">
+                <div>
+                    <h1 class="font-headline font-black text-4xl tracking-tight mb-4 text-white">Hackfest.</h1>
+                    <p class="text-primary-fixed opacity-90 text-lg leading-relaxed max-w-md text-slate-200">
+                        Join the next generation of architectural builders. Structure your team, solve complex challenges, and climb the leaderboard.
+                    </p>
+                </div>
+                <div class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+                            <span class="material-symbols-outlined icon-fill text-white">architecture</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline font-bold text-lg text-white">Structured Logic</h3>
+                            <p class="text-sm text-slate-300">Every hunt is a blueprint for excellence.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Forms -->
+            <div class="lg:col-span-3 p-8 md:p-12 flex flex-col h-full max-h-[85vh] overflow-y-auto custom-scrollbar">
+            
+            <a href="index.html" class="inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary mb-6 transition-colors w-fit">
+                <span class="material-symbols-outlined text-[1rem]">arrow_back</span>
+                Back to Login
+            </a>
+
+            <h1 class="text-3xl font-headline font-extrabold text-primary mb-2">Register Team</h1>
+            <p class="text-on-surface-variant mb-6 text-sm">Form your squad of up to 4 members to compete in elite architectural hunts.</p>
+
+            <div id="errorAlert" class="hidden bg-error-container text-on-error-container p-4 rounded-lg font-medium text-sm mb-6 flex items-start gap-3">
+                <span class="material-symbols-outlined text-error mt-0.5">error</span>
+                <span id="errorMsg"></span>
+            </div>
+
+            <form id="registerForm" class="space-y-8">
+                <!-- Team Core -->
+                <div class="bg-surface-container-low p-6 rounded-xl space-y-5">
+                    <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Team Identity</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Team Name <span class="text-error">*</span></label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">groups</span>
+                            <input type="text" id="teamName" class="form-input" placeholder="e.g. LogicKnights" required maxlength="50">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="form-group">
+                            <label class="form-label">Password <span class="text-error">*</span></label>
+                            <div class="input-icon-wrap">
+                                <span class="material-symbols-outlined input-icon">lock</span>
+                                <input type="password" id="teamPassword" class="form-input" placeholder="••••••••" required minlength="6">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password <span class="text-error">*</span></label>
+                            <div class="input-icon-wrap">
+                                <span class="material-symbols-outlined input-icon">lock_reset</span>
+                                <input type="password" id="teamPasswordConfirm" class="form-input" placeholder="••••••••" required minlength="6">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Lead -->
+                <div class="bg-surface-container-low p-6 rounded-xl space-y-5 border-l-4 border-primary">
+                    <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Team Lead</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="form-group">
+                            <label class="form-label">Full Name <span class="text-error">*</span></label>
+                            <input type="text" id="leadName" class="form-input" placeholder="Jane Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address <span class="text-error">*</span></label>
+                            <input type="email" id="leadEmail" class="form-input" placeholder="lead@team.com" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Members -->
+                <div class="bg-surface-container-low p-6 rounded-xl space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Members (Optional)</h3>
+                        <button type="button" id="addMemberBtn" class="text-xs font-semibold text-primary hover:bg-surface-container-highest px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">add</span> Add Member
+                        </button>
+                    </div>
+
+                    <div id="membersContainer" class="space-y-4">
+                        <!-- Members will be injected here via JS -->
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" id="submitBtn" class="btn btn-primary btn-lg btn-full text-[1rem]">
+                        CREATE TEAM & REGISTER
+                    </button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Logic -->
+    <script type="module">
+        import { supabase, redirectIfAuth } from './config.js';
+
+        redirectIfAuth(); // If already logged in, skip register
+
+        const membersContainer = document.getElementById('membersContainer');
+        const addMemberBtn = document.getElementById('addMemberBtn');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMsg = document.getElementById('errorMsg');
+        const registerForm = document.getElementById('registerForm');
+        
+        let memberCount = 0;
+        const MAX_ADDITIONAL_MEMBERS = 3;
+
+        function renderMemberRow(index) {
+            const div = document.createElement('div');
+            div.className = 'grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-surface-container-highest p-3 rounded-xl animate-fade-in member-row';
+            div.dataset.index = index;
+            div.innerHTML = `
+                <div class="form-group md:col-span-5">
+                    <label class="form-label text-[10px]">Member ${index} Name</label>
+                    <input type="text" class="form-input form-input-sm member-name" required>
+                </div>
+                <div class="form-group md:col-span-6">
+                    <label class="form-label text-[10px]">Member ${index} Email</label>
+                    <input type="email" class="form-input form-input-sm member-email" required>
+                </div>
+                <div class="md:col-span-1 pt-6 md:pt-0">
+                    <button type="button" class="btn btn-ghost w-full h-full text-error hover:!text-error hover:!border-error remove-btn px-2" title="Remove Member">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            `;
+            
+            div.querySelector('.remove-btn').addEventListener('click', () => {
+                div.remove();
+                memberCount--;
+                addMemberBtn.style.display = 'flex';
+                reindexMembers();
+            });
+            
+            return div;
+        }
+
+        function reindexMembers() {
+            const rows = document.querySelectorAll('.member-row');
+            rows.forEach((row, idx) => {
+                const i = idx + 1;
+                row.dataset.index = i;
+                const labels = row.querySelectorAll('.form-label');
+                labels[0].textContent = `Member ${i} Name`;
+                labels[1].textContent = `Member ${i} Email`;
+            });
+        }
+
+        addMemberBtn.addEventListener('click', () => {
+            if (memberCount >= MAX_ADDITIONAL_MEMBERS) return;
+            memberCount++;
+            membersContainer.appendChild(renderMemberRow(memberCount));
+            if (memberCount >= MAX_ADDITIONAL_MEMBERS) {
+                addMemberBtn.style.display = 'none';
+            }
+        });
+
+        // Form Submission
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorAlert.classList.add('hidden');
+            const btn = document.getElementById('submitBtn');
+
+            const teamName = document.getElementById('teamName').value.trim();
+            const password = document.getElementById('teamPassword').value;
+            const passwordConfirm = document.getElementById('teamPasswordConfirm').value;
+            const leadName = document.getElementById('leadName').value.trim();
+            const leadEmail = document.getElementById('leadEmail').value.trim();
+
+            if (password !== passwordConfirm) {
+                errorMsg.textContent = "Passwords do not match.";
+                errorAlert.classList.remove('hidden');
+                return;
+            }
+
+            // Gather additional members
+            const memberRows = document.querySelectorAll('.member-row');
+            const additionalMembers = [];
+            let emails = [leadEmail.toLowerCase()];
+
+            for (let row of memberRows) {
+                const name = row.querySelector('.member-name').value.trim();
+                const em = row.querySelector('.member-email').value.trim().toLowerCase();
+                if (emails.includes(em)) {
+                    errorMsg.textContent = "Duplicate emails found in form.";
+                    errorAlert.classList.remove('hidden');
+                    return;
+                }
+                emails.push(em);
+                additionalMembers.push({ name, email: em, role: 'member' });
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> PROCESSING...';
+
+            try {
+                // 1. Sign up Lead in Supabase Auth (We use Auth for Leads)
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: leadEmail,
+                    password: password,
+                    options: { data: { name: leadName, role: 'student' } }
+                });
+
+                if (authError) throw authError;
+
+                // 2. Insert into `teams`
+                // Since user might need to confirm email if required by Supabase, 
+                // in a dev environment we assume auto-confirm is enabled.
+                const { data: teamData, error: teamError } = await supabase.from('teams').insert([{
+                    team_name: teamName,
+                    lead_email: leadEmail,
+                    password_hash: 'managed_by_auth' // actual hashing handled by Supabase Auth
+                }]).select().single();
+
+                if (teamError) {
+                    // Try to rollback Auth (best effort)
+                    // If team unique constraint fails, we'll hit this.
+                    throw new Error(teamError.message || "Failed to create team. Name might be taken.");
+                }
+
+                // 3. Insert Lead as first team member
+                const allMembers = [
+                    { team_id: teamData.id, name: leadName, email: leadEmail, role: 'lead' },
+                    ...additionalMembers.map(m => ({ ...m, team_id: teamData.id }))
+                ];
+
+                const { error: membersError } = await supabase.from('team_members').insert(allMembers);
+                if (membersError) throw membersError;
+
+                // Success! Supabase likely logged them in automatically via signUp.
+                window.location.href = 'dashboard.html';
+
+            } catch (err) {
+                errorMsg.textContent = err.message || "An error occurred during registration.";
+                errorAlert.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = 'CREATE TEAM & REGISTER';
+            }
+        });
+
+    </script>
+    <footer class="w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 border-t border-outline-variant/30 text-xs tracking-wider uppercase bg-surface-container-low text-on-surface-variant font-label">
+        <div class="mb-4 md:mb-0">
+            © 2026 Hackfest. All rights reserved.
+        </div>
+        <div class="flex gap-6">
+            <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+            <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+            <a href="#" class="hover:text-primary transition-colors">Contact Support</a>
+        </div>
+    </footer>
+</body>
+</html>

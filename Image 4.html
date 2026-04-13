@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Dashboard | Hackfest</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#434653",
+                    "on-tertiary-fixed": "#380d00",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "outline-variant": "#c3c6d5",
+                    "surface-variant": "#e0e3e5",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "primary-fixed-dim": "#a7c8ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffaa8a",
+                    "secondary": "#515f74",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#3a5f94",
+                    "on-primary-container": "#9cc0fb",
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#8b2e01",
+                    "tertiary-fixed": "#ffdbcf",
+                    "surface-dim": "#d8dadc",
+                    "secondary-fixed": "#d5e3fc",
+                    "on-background": "#191c1e",
+                    "surface-container-highest": "#e0e3e5",
+                    "secondary-container": "#d5e3fc",
+                    "on-surface": "#191c1e",
+                    "inverse-surface": "#2d3133",
+                    "on-primary-fixed-variant": "#1f477b",
+                    "surface": "#f7f9fb",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eceef0",
+                    "on-tertiary-fixed-variant": "#802900",
+                    "on-secondary-container": "#57657a",
+                    "outline": "#737784",
+                    "surface-bright": "#f7f9fb",
+                    "on-error": "#ffffff",
+                    "tertiary": "#651f00",
+                    "on-primary-fixed": "#001b3c",
+                    "primary": "#063669",
+                    "surface-container-high": "#e6e8ea",
+                    "primary-container": "#274e82",
+                    "surface-container-low": "#f2f4f6",
+                    "background": "#f7f9fb",
+                    "error-container": "#ffdad6",
+                    "primary-fixed": "#d5e3ff",
+                    "inverse-primary": "#a7c8ff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "inverse-on-surface": "#eff1f3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-effect {
+            background: rgba(247, 249, 251, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="bg-slate-50 dark:bg-slate-900 flex justify-between items-center w-full px-8 py-4 max-w-full mx-auto font-manrope tracking-tight font-bold z-50">
+<div class="text-xl font-black text-blue-900 dark:text-blue-100">Hackfest</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-blue-900 dark:text-blue-400 border-b-2 border-blue-900 dark:border-blue-400 pb-1 hover:text-blue-700 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Hackathons</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Leaderboard</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="text-blue-900 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Profile</button>
+<button class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Logout</button>
+</div>
+</header>
+<main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full">
+<!-- Dashboard Header & Stats -->
+<section class="mb-12">
+<div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+<div>
+<h1 class="font-headline text-display-lg text-primary text-4xl md:text-5xl font-extrabold tracking-tight mb-2">Architectural Logic</h1>
+<p class="text-on-surface-variant max-w-2xl font-medium">Welcome back, Alex. Your current trajectory is leading towards the Grand Finale. Track your progress and hunt for the next challenge.</p>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 bg-surface-container-highest rounded-xl">
+<span class="material-symbols-outlined text-primary" data-icon="stars" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="font-label text-xs tracking-wider uppercase font-bold text-primary">Master Tier</span>
+</div>
+</div>
+<!-- Stats Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Stat Card 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl flex flex-col justify-between min-h-[160px] transition-all hover:bg-surface-container-high group">
+<div class="flex justify-between items-start">
+<span class="font-label text-xs tracking-wider uppercase text-on-surface-variant font-semibold">Registered Events</span>
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" data-icon="event_available">event_available</span>
+</div>
+<div>
+<div class="text-4xl font-headline font-extrabold text-primary">12</div>
+<div class="text-sm text-on-surface-variant font-medium">+2 from last month</div>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-primary-container p-6 rounded-xl flex flex-col justify-between min-h-[160px] text-on-primary-container relative overflow-hidden">
+<div class="relative z-10">
+<div class="flex justify-between items-start">
+<span class="font-label text-xs tracking-wider uppercase opacity-80 font-semibold">Current Rank</span>
+<span class="material-symbols-outlined" data-icon="leaderboard" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+</div>
+<div class="mt-4">
+<div class="text-4xl font-headline font-extrabold">#42</div>
+<div class="text-sm opacity-80 font-medium">Top 2% of Global Players</div>
+</div>
+</div>
+<div class="absolute -bottom-4 -right-4 opacity-10">
+<span class="material-symbols-outlined text-9xl" data-icon="workspace_premium">workspace_premium</span>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl flex flex-col justify-between min-h-[160px] transition-all hover:bg-surface-container-high group">
+<div class="flex justify-between items-start">
+<span class="font-label text-xs tracking-wider uppercase text-on-surface-variant font-semibold">Bounty Earned</span>
+<span class="material-symbols-outlined text-primary group-hover:rotate-12 transition-transform" data-icon="payments">payments</span>
+</div>
+<div>
+<div class="text-4xl font-headline font-extrabold text-primary">$4,250</div>
+<div class="text-sm text-on-surface-variant font-medium">Verified architectural credits</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Hackathon Sections -->
+<div class="space-y-16">
+<!-- Ongoing Hackathons (Featured Glass Card) -->
+<section>
+<div class="flex items-center gap-4 mb-6">
+<h2 class="font-headline text-2xl font-bold tracking-tight text-primary">Ongoing Events</h2>
+<div class="h-[2px] flex-grow bg-surface-container-high"></div>
+<span class="font-label text-xs tracking-wider uppercase text-on-tertiary-fixed-variant bg-tertiary-fixed px-3 py-1 rounded-full">Active Now</span>
+</div>
+<div class="grid grid-cols-1 gap-6">
+<div class="group relative rounded-xl overflow-hidden bg-primary h-[320px] flex items-end p-8">
+<div class="absolute inset-0 z-0">
+<img alt="Tech digital grid background" class="w-full h-full object-cover opacity-40 mix-blend-luminosity" data-alt="abstract tech circuitry and digital grid lines glowing blue in a dark cinematic space environment with futuristic depth" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrPzPZjt-_h8OknpYJVQxFi2GpcEUV1e7Ir37FDbxTF5XoGGmAQqBkGv5BMnhnolgmSf9YGj2FeIiE7hg3zJUGy5akES_pxsMeUJ4niOzV0iDM43KLfXxgd956ymKnO-8dQuobh8vUHK0xzNUQ2QvF5BOaS30qaQZO7KBaLipFU_57aihDX-Sm3UrwSJEP6iqBymwg0ROYHJ4rWoQko8E74D-x02VCvdfyzE9Xwlzk5NcCUhH4Xvw7BqvUSV0MvtWCB_aFcp_sRm0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent"></div>
+</div>
+<div class="relative z-10 w-full flex flex-col md:flex-row justify-between items-end gap-6">
+<div class="max-w-2xl">
+<span class="font-label text-xs tracking-widest uppercase text-on-primary-container mb-2 block">Global Challenge</span>
+<h3 class="text-white font-headline text-3xl font-extrabold mb-3">Cyber-Infrastructure Hunt: Sector 7</h3>
+<p class="text-on-primary-container font-medium mb-4">Uncover the vulnerabilities in high-frequency trading networks. Limited slots remaining for the final phase of discovery.</p>
+<div class="flex flex-wrap gap-4 text-white/80 text-sm font-medium">
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-base" data-icon="schedule">schedule</span> Ends in 14h 22m</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-base" data-icon="groups">groups</span> 1,240 Participants</div>
+</div>
+</div>
+<button class="bg-gradient-to-br from-primary to-primary-container text-white px-10 py-4 rounded-xl font-label text-sm tracking-widest uppercase font-bold hover:shadow-xl transition-all active:scale-95 whitespace-nowrap">
+                                Join Session
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Upcoming Hackathons (Asymmetric Grid) -->
+<section>
+<div class="flex items-center gap-4 mb-6">
+<h2 class="font-headline text-2xl font-bold tracking-tight text-primary">Upcoming Hunts</h2>
+<div class="h-[2px] flex-grow bg-surface-container-high"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1 -->
+<div class="bg-surface-container-low p-6 rounded-xl hover:bg-surface-container-lowest transition-all group">
+<div class="h-40 rounded-lg overflow-hidden mb-6 bg-surface-container-highest">
+<img alt="Collaborative workshop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="top down view of tech team collaborating around a desk with laptops and architectural blueprints in a modern office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARcyFrvuz-8Vbjr8faNIOxFZsXEqrWnRnGR48lPTxwUa5NEZLzmA4Jrcay7aqk85adzaQUjWBXlUHtT8ytKBUQvxEBLuEa5cKzIz5vkGKQfKEG5NBVCcMI13sdW42Y_Jj7WydDMoDnpof6ernygMJxkllScqjAvSimXJ9GeWogQGq4Vbc7Me7mfr65sP71d3PROicMnusMBKAzCox1yuQ9zDMJ8Y-6Fr_PTYKzcNVLuqh1e2YJZ21XreMcp8D-OZuXVWLBO7BC9vE"/>
+</div>
+<div class="flex flex-col h-[calc(100%-11.5rem)]">
+<h4 class="font-headline text-xl font-bold text-primary mb-2">Quantum Logic Sprint</h4>
+<p class="text-on-surface-variant text-sm line-clamp-2 mb-4">Designing resilient encryption protocols for the post-quantum era. Priority for cryptography specialists.</p>
+<div class="mt-auto space-y-3">
+<div class="flex justify-between text-xs font-semibold text-on-surface-variant font-label uppercase tracking-wider">
+<span>Starts</span>
+<span>Oct 12, 09:00 AM</span>
+</div>
+<button class="w-full bg-surface-container-highest text-on-surface py-3 rounded-xl font-label text-xs tracking-widest uppercase font-bold hover:bg-primary hover:text-white transition-colors">
+                                    Register Early
+                                </button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-low p-6 rounded-xl hover:bg-surface-container-lowest transition-all group">
+<div class="h-40 rounded-lg overflow-hidden mb-6 bg-surface-container-highest">
+<img alt="Circuit board close-up" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="close-up macro photography of a circuit board with bright blue glowing lights and detailed hardware architecture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOvSW0U0nLNyGoqDVPWj_A6NpR3fz0x8NTSwAicRu4EsYlmBORjiP4o53HMy8KPtGJmwxM52wRM0Fk1aSABy5TUtmGdDttxkkfrp9_ivyfiEkayfqf1jlETkFT1DCtEL_oMly9dIDpw73poSQuJQXMFxscoKf_SJI32oUwGPoth0sgGVU1DyWGlH0OojH8BklQj9xg9IGm5IDnPsYhMpKC7WpW9duzeT1QTYd1B_ZDzpO2UbAhQbCXgCGLCVxnXLo1cDHkO-4Odk4"/>
+</div>
+<div class="flex flex-col h-[calc(100%-11.5rem)]">
+<h4 class="font-headline text-xl font-bold text-primary mb-2">IoT Edge Security</h4>
+<p class="text-on-surface-variant text-sm line-clamp-2 mb-4">Hardening the perimeter of industrial control systems against coordinated persistent threats.</p>
+<div class="mt-auto space-y-3">
+<div class="flex justify-between text-xs font-semibold text-on-surface-variant font-label uppercase tracking-wider">
+<span>Starts</span>
+<span>Oct 24, 02:00 PM</span>
+</div>
+<button class="w-full bg-surface-container-highest text-on-surface py-3 rounded-xl font-label text-xs tracking-widest uppercase font-bold hover:bg-primary hover:text-white transition-colors">
+                                    Register Early
+                                </button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-low p-6 rounded-xl hover:bg-surface-container-lowest transition-all group">
+<div class="h-40 rounded-lg overflow-hidden mb-6 bg-surface-container-highest">
+<img alt="Server room with lights" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="cinematic view of a server room corridor with glowing blue and white led indicators reflecting on polished floor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr26Djstm_kTawr84sUBYDtQXfRWXSoNrDsSIWVEacUgsjRb40tOphE2iETWxkhAbI3NoZFsGhAKu9cqRo3Ber343-x5uYk2yPmLePVp6XKpRzsfI7c_LHjb65EyHPuImd7fE8QgJFdudrHEXp6Wn4shWwEpZdhMLHjpXiqSDkoFQnIHBaypDUQrwEMpCe9X2WdPmGTQ2kZK2riIsGDb4iwydqMk4o8XBDejBrKFgVz-FXtFG1mGR5gX8TS68t6Q5_O58-s2DSBY0"/>
+</div>
+<div class="flex flex-col h-[calc(100%-11.5rem)]">
+<h4 class="font-headline text-xl font-bold text-primary mb-2">Sustainable Data Centers</h4>
+<p class="text-on-surface-variant text-sm line-clamp-2 mb-4">Algorithmic optimization for cooling systems in large-scale server farms to reduce carbon footprint.</p>
+<div class="mt-auto space-y-3">
+<div class="flex justify-between text-xs font-semibold text-on-surface-variant font-label uppercase tracking-wider">
+<span>Starts</span>
+<span>Nov 05, 10:00 AM</span>
+</div>
+<button class="w-full bg-surface-container-highest text-on-surface py-3 rounded-xl font-label text-xs tracking-widest uppercase font-bold hover:bg-primary hover:text-white transition-colors">
+                                    Register Early
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Closed Hackathons (Data Table Style) -->
+<section>
+<div class="flex items-center gap-4 mb-6">
+<h2 class="font-headline text-2xl font-bold tracking-tight text-primary">Event Archives</h2>
+<div class="h-[2px] flex-grow bg-surface-container-high"></div>
+</div>
+<div class="bg-surface-container-low rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-highest">
+<th class="px-6 py-4 font-label text-xs tracking-widest uppercase text-on-surface-variant">Hackathon Name</th>
+<th class="px-6 py-4 font-label text-xs tracking-widest uppercase text-on-surface-variant hidden md:table-cell">Duration</th>
+<th class="px-6 py-4 font-label text-xs tracking-widest uppercase text-on-surface-variant hidden lg:table-cell">Status</th>
+<th class="px-6 py-4 font-label text-xs tracking-widest uppercase text-on-surface-variant text-right">Result</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-5">
+<div class="font-headline font-bold text-primary">Urban Traffic Flow Optimization</div>
+<div class="text-xs text-on-surface-variant mt-1">Concluded Sep 2024</div>
+</td>
+<td class="px-6 py-5 hidden md:table-cell text-sm font-medium">48 Hours</td>
+<td class="px-6 py-5 hidden lg:table-cell">
+<span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded text-xs font-bold uppercase tracking-tighter">Completed</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-primary font-label text-xs font-bold tracking-widest uppercase hover:underline">View Results</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-5">
+<div class="font-headline font-bold text-primary">Autonomous Maritime Logistics</div>
+<div class="text-xs text-on-surface-variant mt-1">Concluded Aug 2024</div>
+</td>
+<td class="px-6 py-5 hidden md:table-cell text-sm font-medium">72 Hours</td>
+<td class="px-6 py-5 hidden lg:table-cell">
+<span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded text-xs font-bold uppercase tracking-tighter">Completed</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-primary font-label text-xs font-bold tracking-widest uppercase hover:underline">View Results</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-5">
+<div class="font-headline font-bold text-primary">Satellite Mesh Network Prototypes</div>
+<div class="text-xs text-on-surface-variant mt-1">Concluded Jul 2024</div>
+</td>
+<td class="px-6 py-5 hidden md:table-cell text-sm font-medium">24 Hours</td>
+<td class="px-6 py-5 hidden lg:table-cell">
+<span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded text-xs font-bold uppercase tracking-tighter">Completed</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-primary font-label text-xs font-bold tracking-widest uppercase hover:underline">View Results</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-4 flex justify-center">
+<button class="text-primary font-label text-xs tracking-widest uppercase font-bold flex items-center gap-2 hover:gap-3 transition-all">
+                        View Full Archives <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-100 dark:bg-slate-950 w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 border-t border-transparent font-inter text-xs tracking-wider uppercase">
+<div class="text-slate-500 dark:text-slate-400 mb-4 md:mb-0">© 2024 Hackfest Architectural Logic. All rights reserved.</div>
+<div class="flex gap-8">
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors opacity-80 hover:opacity-100" href="#">Contact Support</a>
+</div>
+</footer>
+<!-- Mobile Navigation Bar -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 glass-effect bg-surface/90 border-t border-surface-container-high py-3 px-6 flex justify-around items-center z-50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Dash</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Events</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Rank</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">User</span>
+</a>
+</div>
+</body></html>

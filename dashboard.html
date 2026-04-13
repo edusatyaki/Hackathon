@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | Hackfest</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: "var(--primary)" } } } }
+    </script>
+</head>
+<body class="bg-surface text-on-surface">
+
+    <header class="nav-bar">
+        <a href="dashboard.html" class="nav-brand">Hackfest</a>
+        <nav class="nav-links">
+            <a href="dashboard.html" class="nav-link active">Dashboard</a>
+            <a href="leaderboard.html" class="nav-link">Leaderboard</a>
+        </nav>
+        <div class="nav-actions">
+            <span id="navTeamName" class="text-sm font-bold text-on-surface-variant mr-2"></span>
+            <button id="logoutBtn" class="btn btn-ghost btn-sm">Logout</button>
+        </div>
+    </header>
+
+    <main class="page-main">
+        <!-- Dashboard Header & Stats -->
+        <section class="mb-12">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+                <div>
+                    <h1 class="text-display text-primary mb-2" id="welcomeHeading">Architectural Logic</h1>
+                    <p class="text-on-surface-variant max-w-2xl font-medium">Select an active hackathon to begin the hunt, or track your overall performance.</p>
+                </div>
+            </div>
+
+            <!-- Stats Bento Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="stat-card">
+                    <div class="flex justify-between items-start">
+                        <span class="stat-label">Events Joined</span>
+                        <span class="material-symbols-outlined text-primary">event_available</span>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="statEventsCount">0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card featured relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start">
+                            <span class="stat-label hidden md:block">Overall Rank</span>
+                            <span class="stat-label md:hidden">Rank</span>
+                            <span class="material-symbols-outlined icon-fill">leaderboard</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="stat-value" id="statRank">#—</div>
+                            <div class="stat-sub">Based on latest performance</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="flex justify-between items-start">
+                        <span class="stat-label hidden md:block">Total Rounds Cleared</span>
+                        <span class="stat-label md:hidden">Cleared</span>
+                        <span class="material-symbols-outlined text-primary">task_alt</span>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="statRoundsCount">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Squad Roster -->
+            <div class="card p-6 border-l-4 border-secondary-fixed">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary-fixed">groups</span>
+                        <h3 class="text-title text-primary">Your Squad</h3>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="openModal('manageRosterModal')"><span class="material-symbols-outlined text-[16px] mr-1">edit</span> Manage Roster</button>
+                </div>
+                <div id="rosterContainer" class="flex flex-wrap gap-4">
+                    <div class="spinner border-t-secondary-fixed"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hackathon Sections -->
+        <div class="space-y-16" id="hackathonsContainer">
+            <!-- Filled via JS -->
+            <div class="text-center py-12"><div class="spinner mx-auto"></div></div>
+        </div>
+
+        <!-- MODAL: MANAGE ROSTER -->
+        <div class="modal-overlay" id="manageRosterModal">
+            <div class="modal w-[500px]">
+                <div class="modal-header">
+                    <h3 class="modal-title">Manage Global Squad</h3>
+                    <button class="modal-close" onclick="closeModal('manageRosterModal')"><span class="material-symbols-outlined">close</span></button>
+                </div>
+                <div class="modal-body space-y-2 max-h-[60vh] overflow-y-auto" id="rosterManagerList">
+                    <!-- dynamic -->
+                </div>
+                <div class="modal-body border-t border-outline-variant/30 flex gap-2">
+                    <input type="text" id="newSquadName" class="form-input form-input-sm" placeholder="Member Name">
+                    <input type="email" id="newSquadEmail" class="form-input form-input-sm" placeholder="Member Email">
+                    <button class="btn btn-primary btn-sm shrink-0" onclick="window.addSquadMember()">Add</button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost w-full" onclick="closeModal('manageRosterModal')">Done</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase, requireAuth, getCurrentTeam, hackathonStatus } from './config.js';
+
+        let user, team;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            user = await requireAuth();
+            if(!user) return;
+            
+            team = await getCurrentTeam(user);
+            if (!team) {
+                // Not a team lead, or data missing. (For simplicity, we assume logged in user is team lead)
+                alert("Team data not found. Please register again.");
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('navTeamName').innerHTML = `<span class="material-symbols-outlined text-[16px] mr-1 inline-block align-text-bottom">group</span>${team.team_name}`;
+            document.getElementById('welcomeHeading').textContent = team.team_name;
+
+            window.closeModal = (id) => { document.getElementById(id).classList.remove('open'); };
+            window.openModal = (id) => { document.getElementById(id).classList.add('open'); };
+
+            await loadDashboardData();
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        });
+
+        async function loadDashboardData() {
+            // Fetch all hackathons with count
+            const { data: hackathons, error: hError } = await supabase
+                .from('hackathons')
+                .select('*, rounds(count)')
+                .order('start_time', { ascending: false });
+
+            // Fetch team progress
+            const { data: progresses, error: pError } = await supabase
+                .from('progress')
+                .select('*')
+                .eq('team_id', team.id);
+
+            // Fetch roster
+            const { data: members } = await supabase
+                .from('team_members')
+                .select('*')
+                .eq('team_id', team.id);
+
+            if (hError || pError) {
+                console.error("Error loading data");
+                return;
+            }
+
+            const joinedIds = (progresses || []).map(p => p.hackathon_id);
+            const totalRoundsCleared = (progresses || []).reduce((acc, p) => acc + Math.max(0, p.current_round - 1), 0);
+            
+            document.getElementById('statEventsCount').textContent = joinedIds.length;
+            document.getElementById('statRoundsCount').textContent = totalRoundsCleared;
+
+            renderHackathons(hackathons || [], progresses || []);
+            renderRoster(members || []);
+            
+            // Calculate Rank
+            if(joinedIds.length > 0) {
+                const latestJoinedId = hackathons.find(h => joinedIds.includes(h.id))?.id;
+                if(latestJoinedId) calculateRank(latestJoinedId);
+            }
+        }
+
+        async function calculateRank(hackathonId) {
+            try {
+                const { data } = await supabase.from('progress').select('*, teams(team_name)').eq('hackathon_id', hackathonId);
+                if(!data) return;
+                
+                let ranks = data.map(d => {
+                   d.time_taken_ms = new Date(d.last_updated) - new Date(d.started_at);
+                   return d;
+                });
+                ranks.sort((a, b) => {
+                    if(b.current_round !== a.current_round) return b.current_round - a.current_round;
+                    return a.time_taken_ms - b.time_taken_ms;
+                });
+
+                const myIndex = ranks.findIndex(r => r.team_id === team.id);
+                if(myIndex !== -1) {
+                    document.getElementById('statRank').textContent = `#${myIndex + 1}`;
+                }
+            } catch(e) { console.error('Rank calc error', e) }
+        }
+
+        function renderRoster(members) {
+            window.currentRosterCount = members.length;
+            const container = document.getElementById('rosterContainer');
+            const managerList = document.getElementById('rosterManagerList');
+            
+            if(members.length === 0) {
+                container.innerHTML = '<span class="text-sm">No members found.</span>';
+                managerList.innerHTML = '<span class="text-sm">No members found.</span>';
+                return;
+            }
+            container.innerHTML = members.map(m => `
+                <div class="px-4 py-2 bg-surface-container rounded-full flex gap-2 items-center shadow-sm border border-outline-variant/30">
+                    <div class="h-6 w-6 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold">
+                        ${m.name.substring(0,2).toUpperCase()}
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-primary leading-none mb-1">${m.name}</span>
+                        <span class="text-[10px] text-on-surface-variant leading-none">${m.email}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            managerList.innerHTML = members.map(m => `
+                <div class="flex justify-between items-center bg-surface-container-highest p-3 rounded text-sm group">
+                    <div><strong class="text-primary">${m.name}</strong> <span class="text-xs ml-2 text-outline">(${m.email})</span></div>
+                    ${m.role !== 'lead' ? `<button class="btn btn-ghost btn-sm text-error h-auto py-1 opacity-0 group-hover:opacity-100 transition-opacity" onclick="window.removeSquadMember('${m.id}')"><span class="material-symbols-outlined text-[14px]">close</span> Remove</button>` : '<span class="badge bg-primary/20 text-primary text-[10px]">LEAD</span>'}
+                </div>
+            `).join('');
+        }
+
+        window.removeSquadMember = async (id) => {
+            if(!confirm("Remove from main squad?")) return;
+            await supabase.from('team_members').delete().eq('id', id);
+            loadDashboardData();
+        };
+
+        window.addSquadMember = async () => {
+            const n = document.getElementById('newSquadName').value.trim();
+            const e = document.getElementById('newSquadEmail').value.trim();
+            if(!n || !e) return alert("Fill out both name and email.");
+            await supabase.from('team_members').insert([{
+                team_id: team.id, name: n, email: e, role: 'member'
+            }]);
+            document.getElementById('newSquadName').value = '';
+            document.getElementById('newSquadEmail').value = '';
+            loadDashboardData();
+        };
+
+        function renderHackathons(hackathons, progresses) {
+            const container = document.getElementById('hackathonsContainer');
+            container.innerHTML = '';
+
+            const ongoing = hackathons.filter(h => hackathonStatus(h) === 'ongoing');
+            const upcoming = hackathons.filter(h => hackathonStatus(h) === 'upcoming');
+            const closed = hackathons.filter(h => hackathonStatus(h) === 'closed');
+
+            // ONGOING
+            if (ongoing.length > 0) {
+                let html = `
+                <section>
+                    <div class="section-header">
+                        <h2>Ongoing Events</h2>
+                        <div class="section-divider"></div>
+                        <span class="live-dot">Live Actions</span>
+                    </div>
+                    <div class="grid-2">
+                `;
+                
+                ongoing.forEach(h => {
+                    const prog = progresses.find(p => p.hackathon_id === h.id);
+                    const isJoined = !!prog;
+                    const canJoin = h.registration_open;
+                    const maxRounds = h.rounds?.[0]?.count || 0;
+                    
+                    let buttonHtml = '';
+                    if (isJoined) {
+                        const isCompleted = prog.current_round > maxRounds && maxRounds > 0;
+                        if(isCompleted) {
+                             buttonHtml = `<a href="leaderboard.html?id=${h.id}" class="btn bg-white text-primary font-bold ml-auto shadow-lg"><span class="material-symbols-outlined mr-1 text-[18px]">verified</span> VIEW STANDINGS</a>`;
+                        } else {
+                             buttonHtml = `<button onclick="window.enterHackathon('${h.id}')" class="btn btn-primary ml-auto shadow-lg shadow-primary/20">ENTER HUNT <span class="material-symbols-outlined ml-1 text-[18px]">arrow_forward</span></button>`;
+                        }
+                    } else if (canJoin) {
+                        buttonHtml = `<button onclick="window.joinHackathon('${h.id}', ${h.max_team_size || 4})" class="btn btn-secondary ml-auto">JOIN EVENT</button>`;
+                    } else {
+                        buttonHtml = `<span class="badge badge-closed-reg ml-auto">Registration Closed</span>`;
+                    }
+
+                    html += `
+                        <div class="hack-card-hero">
+                            <div class="hack-card-hero-overlay"></div>
+                            <div class="hack-card-hero-content flex flex-col md:flex-row justify-between items-end gap-6">
+                                <div class="max-w-md">
+                                    <div class="flex gap-2 items-center mb-3">
+                                        <span class="badge badge-ongoing">Live Now</span>
+                                        <span class="badge bg-surface-container/50 text-white shadow backdrop-blur-md">Limit: ${h.max_team_size || 4} Members</span>
+                                    </div>
+                                    <h3 class="text-headline text-white mb-2 leading-tight">${h.name}</h3>
+                                    <p class="text-on-primary-container text-sm line-clamp-2">${h.description || 'No description provided.'}</p>
+                                </div>
+                                ${buttonHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div></section>`;
+                container.innerHTML += html;
+            }
+
+            // UPCOMING
+            if (upcoming.length > 0) {
+                let html = `
+                <section>
+                    <div class="section-header">
+                        <h2>Upcoming Hunts</h2>
+                        <div class="section-divider"></div>
+                    </div>
+                    <div class="grid-3">
+                `;
+                
+                upcoming.forEach(h => {
+                    const isJoined = progresses.some(p => p.hackathon_id === h.id);
+                    const canJoin = h.registration_open;
+                    const dateStr = new Date(h.start_time).toLocaleDateString('en-IN', {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'});
+
+                    let actionHtml = '';
+                    if (isJoined) {
+                        actionHtml = `<div class="badge badge-ongoing w-fit mx-auto mt-2">Registered</div>`;
+                    } else if (canJoin) {
+                        actionHtml = `<button onclick="window.joinHackathon('${h.id}', ${h.max_team_size || 4})" class="btn btn-secondary btn-full mt-2">REGISTER EARLY</button>`;
+                    } else {
+                        actionHtml = `<div class="badge badge-closed-reg w-fit mx-auto mt-2">Closed</div>`;
+                    }
+
+                    html += `
+                        <div class="hack-card p-6 border border-outline-variant/30">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="badge badge-upcoming">Upcoming</span>
+                                <span class="badge bg-surface-container-high ml-auto text-[10px]">LIMIT: ${h.max_team_size || 4} MEMBERS</span>
+                            </div>
+                            <h4 class="text-title text-primary mb-2">${h.name}</h4>
+                            <p class="text-body text-on-surface-variant line-clamp-2 mb-4 flex-grow">${h.description || ''}</p>
+                            <div class="flex justify-between items-center text-xs font-bold text-outline uppercase tracking-wider mb-2">
+                                <span>Starts:</span>
+                                <span>${dateStr}</span>
+                            </div>
+                            ${actionHtml}
+                        </div>
+                    `;
+                });
+                html += `</div></section>`;
+                container.innerHTML += html;
+            }
+
+            // CLOSED
+            if (closed.length > 0) {
+                let html = `
+                <section>
+                    <div class="section-header">
+                        <h2>Event Archives</h2>
+                        <div class="section-divider"></div>
+                    </div>
+                    <div class="card overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Hackathon Name</th>
+                                    <th>Status</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                closed.forEach(h => {
+                    html += `
+                        <tr>
+                            <td>
+                                <div class="font-headline font-bold text-primary text-base">${h.name}</div>
+                            </td>
+                            <td><span class="badge badge-closed">Completed</span></td>
+                            <td class="text-right">
+                                <a href="leaderboard.html?id=${h.id}" class="text-xs font-bold text-primary uppercase tracking-widest hover:underline cursor-pointer">View Results</a>
+                            </td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table></div></section>`;
+                container.innerHTML += html;
+            }
+
+            if (ongoing.length === 0 && upcoming.length === 0 && closed.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-symbols-outlined text-6xl text-outline-variant">assignment_late</span>
+                        <h3 class="text-title text-primary">No Hackathons Available</h3>
+                        <p>Ask your administrator to create a new hackathon.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Global functions for inline onclick handlers
+        window.joinHackathon = async (hackathonId, maxTeamSize) => {
+            if(window.currentRosterCount > maxTeamSize) {
+                alert(`Cannot join event: Your squad has ${window.currentRosterCount} members, but this event only permits up to ${maxTeamSize}. Please manage your roster and remove people before joining.`);
+                openModal('manageRosterModal');
+                return;
+            }
+
+            try {
+                const { error } = await supabase.from('progress').insert({
+                    team_id: team.id,
+                    hackathon_id: hackathonId,
+                    current_round: 1
+                });
+                if (error) {
+                    if (error.code === '23505') alert("You are already registered.");
+                    else throw error;
+                } else {
+                    alert("Successfully registered for the hackathon!");
+                    loadDashboardData(); // Refresh UI
+                }
+            } catch (err) {
+                alert("Error registering: " + err.message);
+            }
+        };
+
+        window.enterHackathon = async (hackathonId) => {
+            try {
+                // Safeguard: Check completion status directly before entering
+                const { data: pData } = await supabase.from('progress').select('*').eq('team_id', team.id).eq('hackathon_id', hackathonId).single();
+                const { data: rData } = await supabase.from('rounds').select('id').eq('hackathon_id', hackathonId);
+                
+                if (pData && rData && rData.length > 0 && pData.current_round > rData.length) {
+                    // Already Finished - send to leaderboard!
+                    window.location.href = `leaderboard.html?id=${hackathonId}`;
+                } else {
+                    // Enter Play Screen
+                    window.location.href = `play.html?id=${hackathonId}`;
+                }
+            } catch(e) {
+                window.location.href = `play.html?id=${hackathonId}`;
+            }
+        };
+
+    </script>
+    <footer class="w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 border-t border-outline-variant/30 text-xs tracking-wider uppercase bg-surface-container-low text-on-surface-variant font-label">
+        <div class="mb-4 md:mb-0">
+            © 2026 Hackfest. All rights reserved.
+        </div>
+        <div class="flex gap-6">
+            <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+            <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+            <a href="#" class="hover:text-primary transition-colors">Contact Support</a>
+        </div>
+    </footer>
+</body>
+</html>

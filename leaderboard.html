@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackfest | Leaderboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: "var(--primary)", "primary-container": "var(--primary-container)" } } } }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+    <!-- TopNavBar -->
+    <header class="nav-bar">
+        <a href="dashboard.html" class="nav-brand">Hackfest</a>
+        <nav class="nav-links">
+            <a href="dashboard.html" class="nav-link" id="navDash">Dashboard</a>
+            <a href="leaderboard.html" class="nav-link active">Leaderboard</a>
+        </nav>
+        <div class="nav-actions">
+            <span id="navRoleLabel" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mr-2"></span>
+            <button id="logoutBtn" class="btn btn-ghost btn-sm">Logout</button>
+        </div>
+    </header>
+
+    <main class="page-main">
+        <!-- Hero Header Section -->
+        <section class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="flex h-2.5 w-2.5 rounded-full bg-primary relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 hidden" id="livePing"></span>
+                    </span>
+                    <span class="font-label text-xs tracking-wider uppercase text-primary font-semibold" id="sysStatus">System State</span>
+                </div>
+                <h1 class="text-display text-primary mb-2">Global Standings</h1>
+                <div class="relative mt-4 max-w-sm group">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary z-10 pointer-events-none">emoji_events</span>
+                    <select id="hackathonSelect" class="form-select shadow-md appearance-none pl-12 pr-10 py-3 bg-surface-container-lowest border border-outline-variant/50 hover:border-primary/50 focus:border-primary rounded-xl font-bold text-primary transition-all cursor-pointer w-full text-sm h-auto">
+                        <option value="">Loading Events...</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none group-hover:text-primary transition-colors">expand_more</span>
+                </div>
+            </div>
+            
+            <div class="relative w-full md:w-80 group">
+                <span class="material-symbols-outlined input-icon absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+                <input type="text" id="searchInput" class="form-input pl-11" placeholder="Search team names...">
+            </div>
+        </section>
+
+        <div id="loader" class="flex flex-col items-center justify-center py-12">
+            <div class="spinner"></div>
+            <p class="mt-4 text-xs font-label text-outline uppercase tracking-widest">Aggregating Global Data...</p>
+        </div>
+
+        <div id="contentArea" class="hidden animate-fade-in">
+
+            <!-- Top 3 Podium -->
+            <section class="grid-3 mb-12 items-end" id="podiumArea">
+                <!-- Injected via JS -->
+            </section>
+
+            <!-- Leaderboard Table -->
+            <div class="card overflow-x-auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Team Name</th>
+                            <th>Current Round</th>
+                            <th class="text-right">Time Elapsed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <!-- Injected via JS -->
+                    </tbody>
+                </table>
+                <div class="px-8 py-6 bg-surface-container-low flex justify-between items-center text-xs text-on-surface-variant uppercase font-label tracking-widest">
+                    <span id="tableStatus">Showing 0 teams</span>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase, getCurrentUser, isAdmin, formatDuration } from './config.js';
+
+        let user, adminFlag = false;
+        let hackathons = [];
+        let currentHackathonId = null;
+        let realTimeSubscription = null;
+        let fullData = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            user = await getCurrentUser();
+            if(user) {
+                adminFlag = await isAdmin(user);
+                document.getElementById('navRoleLabel').textContent = adminFlag ? "Admin" : "Student";
+                if(adminFlag) document.getElementById('navDash').href = "admin.html";
+            }
+
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            });
+
+            await loadHackathons();
+
+            const params = new URLSearchParams(window.location.search);
+            const pId = params.get('id');
+            if(pId && hackathons.some(h => h.id === pId)) {
+                document.getElementById('hackathonSelect').value = pId;
+                currentHackathonId = pId;
+            } else if (hackathons.length > 0) {
+                currentHackathonId = hackathons[0].id;
+            }
+
+            if(currentHackathonId) fetchLeaderboard();
+
+            document.getElementById('hackathonSelect').addEventListener('change', (e) => {
+                currentHackathonId = e.target.value;
+                fetchLeaderboard();
+            });
+
+            document.getElementById('searchInput').addEventListener('input', renderTable);
+        });
+
+        async function loadHackathons() {
+            const { data, error } = await supabase.from('hackathons').select('id, name').order('start_time', {ascending: false});
+            if(error) return console.error(error);
+            hackathons = data;
+            const sel = document.getElementById('hackathonSelect');
+            sel.innerHTML = hackathons.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
+        }
+
+        async function fetchLeaderboard() {
+            if(!currentHackathonId) return;
+
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('contentArea').classList.add('hidden');
+            document.getElementById('livePing').classList.remove('hidden');
+            document.getElementById('sysStatus').textContent = "Live Updates Active";
+
+            // Cleanup old sub
+            if(realTimeSubscription) await supabase.removeChannel(realTimeSubscription);
+
+            await hydrateData();
+
+            // Setup Realtime
+            realTimeSubscription = supabase.channel('progress_changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'progress', filter: `hackathon_id=eq.${currentHackathonId}` }, payload => {
+                    hydrateData(); // Refetch heavily optimized in prod, but simple refetch is okay here
+                })
+                .subscribe();
+        }
+
+        async function hydrateData() {
+            // Need progress joined with teams to get team_name
+            const { data, error } = await supabase
+                .from('progress')
+                .select('*, teams(team_name)')
+                .eq('hackathon_id', currentHackathonId);
+                
+            if(error) { console.error(error); return; }
+
+            // Ranking Logic:
+            // 1. Highest round reached
+            // 2. Least time to reach that round (last_updated - started_at)
+            fullData = data.map(d => {
+               d.time_taken_ms = new Date(d.last_updated) - new Date(d.started_at);
+               return d;
+            });
+
+            fullData.sort((a, b) => {
+                if(b.current_round !== a.current_round) return b.current_round - a.current_round;
+                return a.time_taken_ms - b.time_taken_ms;
+            });
+
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('contentArea').classList.remove('hidden');
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = fullData.filter(d => d.teams.team_name.toLowerCase().includes(search));
+
+            renderPodium(filtered.slice(0, 3));
+            
+            const tbody = document.getElementById('leaderboardBody');
+            tbody.innerHTML = '';
+
+            filtered.forEach((row, index) => {
+                const rank = index + 1;
+                const formattedTime = formatDuration(row.started_at, row.last_updated);
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="font-bold text-primary">${String(rank).padStart(2,'0')}</td>
+                    <td class="font-semibold">${row.teams.team_name}</td>
+                    <td class="text-on-surface-variant">Round ${String(row.current_round).padStart(2,'0')}</td>
+                    <td class="text-right font-mono font-medium text-primary">${formattedTime}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('tableStatus').textContent = `Showing ${filtered.length} of ${fullData.length} teams`;
+        }
+
+        function renderPodium(top3) {
+            const podiumArea = document.getElementById('podiumArea');
+            if(top3.length === 0) { podiumArea.innerHTML = ''; return; }
+
+            let html = '';
+            
+            // Rank 2
+            if(top3[1]) html += generatePodiumCard(top3[1], 2, 'shield', 'order-2 md:order-1');
+            else html += `<div class="order-2 md:order-1"></div>`;
+
+            // Rank 1
+            if(top3[0]) html += generatePodiumCard(top3[0], 1, 'workspace_premium', 'order-1 md:order-2 rank-1');
+            
+            // Rank 3
+            if(top3[2]) html += generatePodiumCard(top3[2], 3, 'token', 'order-3 md:order-3');
+            else html += `<div class="order-3"></div>`;
+
+            podiumArea.innerHTML = html;
+        }
+
+        function generatePodiumCard(data, rank, icon, classes) {
+            const formattedTime = formatDuration(data.started_at, data.last_updated);
+            const teamInitials = data.teams.team_name.substring(0,2).toUpperCase();
+            
+            return `
+                <div class="podium-card ${classes}">
+                    <span class="font-label text-xs tracking-widest uppercase mb-4 ${rank===1 ? 'text-white/80' : 'text-on-surface-variant'}">Rank 0${rank}</span>
+                    <div class="podium-avatar">
+                        ${teamInitials}
+                    </div>
+                    <h3 class="text-title mb-1 ${rank===1 ? 'text-white' : 'text-primary'}">${data.teams.team_name}</h3>
+                    <p class="text-sm mb-4 ${rank===1 ? 'text-white/80' : 'text-on-surface-variant'}">Round ${String(data.current_round).padStart(2,'0')}</p>
+                    <div class="bg-surface-container-highest px-4 py-1 rounded-full text-xs font-bold text-primary ${rank===1 ? '!bg-white/20 !text-white' : ''}">
+                        ${formattedTime}
+                    </div>
+                </div>
+            `;
+        }
+
+    </script>
+    <footer class="w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 border-t border-outline-variant/30 text-xs tracking-wider uppercase bg-surface-container-low text-on-surface-variant font-label">
+        <div class="mb-4 md:mb-0">
+            © 2026 Hackfest. All rights reserved.
+        </div>
+        <div class="flex gap-6">
+            <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+            <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+            <a href="#" class="hover:text-primary transition-colors">Contact Support</a>
+        </div>
+    </footer>
+</body>
+</html>

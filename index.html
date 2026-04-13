@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackfest | Login Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "var(--primary)",
+                        "primary-container": "var(--primary-container)",
+                        "surface-container-low": "var(--surface-container-low)",
+                        "surface-container-lowest": "var(--surface-container-lowest)",
+                        "outline": "var(--outline)"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-surface font-body text-on-surface flex flex-col min-h-screen">
+
+    <header class="nav-bar">
+        <div class="flex items-center gap-2">
+            <span class="nav-brand">Hackfest</span>
+        </div>
+    </header>
+
+    <div class="flex-grow flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <!-- Background Orbs -->
+        <div class="absolute inset-0 z-0 opacity-10 pointer-events-none">
+            <div
+                class="absolute top-[-10%] right-[-5%] w-[40rem] h-[40rem] rounded-full bg-primary-container blur-[100px]">
+            </div>
+            <div
+                class="absolute bottom-[-10%] left-[-5%] w-[40rem] h-[40rem] rounded-full bg-secondary-fixed blur-[100px]">
+            </div>
+        </div>
+
+        <div
+            class="z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 overflow-hidden rounded-[1.5rem] bg-surface-container-lowest shadow-xl">
+            <!-- Left Hero -->
+            <div class="hidden md:flex hero-bg p-12 flex-col justify-between text-on-primary">
+                <div>
+                    <h1 class="font-headline font-black text-4xl tracking-tight mb-4 text-white">Hackfest.</h1>
+                    <p class="text-primary-fixed opacity-90 text-lg leading-relaxed max-w-md text-slate-200">
+                        Join the next generation of architectural builders. Structure your team, solve complex
+                        challenges, and climb the leaderboard.
+                    </p>
+                </div>
+                <div class="space-y-8">
+                    <div class="flex items-start gap-4">
+                        <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+                            <span class="material-symbols-outlined icon-fill text-white">architecture</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline font-bold text-lg text-white">Structured Logic</h3>
+                            <p class="text-sm text-slate-300">Every hunt is a blueprint for excellence.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+                            <span class="material-symbols-outlined icon-fill text-white">leaderboard</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline font-bold text-lg text-white">Elite Competition</h3>
+                            <p class="text-sm text-slate-300">Compete with the industry's top technical minds.</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 mt-6 border-t border-white/20">
+                        <div class="flex items-center gap-4">
+                            <img src="https://github.com/edusatyaki.png" alt="Satyaki Das"
+                                class="w-14 h-14 rounded-full border-2 border-white/40 shadow-lg object-cover">
+                            <div>
+                                <p class="text-xs text-primary-fixed uppercase tracking-widest font-bold mb-1">
+                                    <font color="white">Architect & Creator</font>
+                                </p>
+                                <p class="text-sm text-white font-semibold">Satyaki Das</p>
+                                <p class="text-xs text-slate-300 mt-1 max-w-[260px] leading-relaxed">An educator,
+                                    mentor, and known for his practical approach to teaching technology and data skills.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Forms -->
+            <div class="p-8 md:p-12 flex flex-col">
+                <div class="mb-8">
+                    <h2 class="font-headline font-extrabold text-3xl text-primary mb-2">Access Portal</h2>
+                    <p class="text-on-surface-variant text-sm">Secure entry for Team Leads and Administrators.</p>
+                </div>
+
+                <!-- Tab Switcher -->
+                <div class="tab-bar mb-8" id="tabSwitcher">
+                    <button class="tab-btn active" data-tab="team">Team Entry</button>
+                    <button class="tab-btn" data-tab="admin">Admin Login</button>
+                </div>
+
+                <!-- Error Alert -->
+                <div id="errorAlert"
+                    class="hidden bg-error-container text-on-error-container p-3 rounded-lg text-sm mb-4"></div>
+
+                <!-- TEAM LOGIN FORM -->
+                <form id="teamForm" class="space-y-5">
+                    <div class="form-group">
+                        <label class="form-label">Lead Email Address</label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">mail</span>
+                            <input type="email" id="teamEmail" class="form-input" placeholder="leader@team.com"
+                                required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">lock</span>
+                            <input type="password" id="teamPassword" class="form-input" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg btn-full mt-2" id="teamSubmitBtn">LOGIN
+                        TEAM</button>
+
+                    <div class="text-center text-sm text-on-surface-variant mt-4">
+                        Don't have a team yet? <a href="register.html"
+                            class="font-bold text-primary hover:underline">Register Here</a>
+                    </div>
+                </form>
+
+                <!-- ADMIN LOGIN FORM -->
+                <form id="adminForm" class="space-y-5 hidden">
+                    <div class="form-group">
+                        <label class="form-label">Admin Identity</label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">admin_panel_settings</span>
+                            <input type="email" id="adminEmail" class="form-input" placeholder="admin@hackfest.com"
+                                required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Security Key</label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">key</span>
+                            <input type="password" id="adminPassword" class="form-input" placeholder="••••••••"
+                                required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-lg btn-full mt-2" id="adminSubmitBtn">SYSTEM
+                        ACCESS</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, getCurrentUser, isAdmin } from './config.js';
+
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await getCurrentUser();
+            if (user) {
+                const admin = await isAdmin(user);
+                window.location.href = admin ? 'admin.html' : 'dashboard.html';
+            }
+        });
+
+        // Tab Switching Logic
+        const tabs = document.querySelectorAll('.tab-btn');
+        const teamForm = document.getElementById('teamForm');
+        const adminForm = document.getElementById('adminForm');
+        const errorAlert = document.getElementById('errorAlert');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                errorAlert.classList.add('hidden');
+
+                if (tab.dataset.tab === 'team') {
+                    teamForm.classList.remove('hidden');
+                    adminForm.classList.add('hidden');
+                } else {
+                    teamForm.classList.add('hidden');
+                    adminForm.classList.remove('hidden');
+                }
+            });
+        });
+
+        function showError(msg) {
+            errorAlert.textContent = msg;
+            errorAlert.classList.remove('hidden');
+        }
+
+        // Team Login
+        teamForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('teamEmail').value;
+            const password = document.getElementById('teamPassword').value;
+            const btn = document.getElementById('teamSubmitBtn');
+            errorAlert.classList.add('hidden');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> VERIFYING...';
+
+            try {
+                // In Supabase, if auth is fully setup, it's signInWithPassword
+                // If it fails, they might not be registered in Auth. We will attempt it.
+                if (!supabase.auth) throw new Error("Supabase Auth required. Check config.js");
+
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+
+                // Validate if user is actually a team lead in DB
+                const { data: teamCheck } = await supabase.from('teams').select('id').eq('lead_email', email).single();
+                if (!teamCheck) {
+                    await supabase.auth.signOut();
+                    throw new Error("No team registered with this email.");
+                }
+
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                showError(err.message || 'Login failed. Verify credentials and active internet connection.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'LOGIN TEAM';
+            }
+        });
+
+        // Admin Login
+        adminForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const btn = document.getElementById('adminSubmitBtn');
+            errorAlert.classList.add('hidden');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> ACCESSING...';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+
+                // Validate admin row
+                const { data: adminCheck } = await supabase.from('admins').select('id').eq('email', email).single();
+                if (!adminCheck) {
+                    await supabase.auth.signOut();
+                    throw new Error("Unauthorized. Admin access required.");
+                }
+
+                window.location.href = 'admin.html';
+            } catch (err) {
+                showError(err.message || 'Admin login failed.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'SYSTEM ACCESS';
+            }
+        });
+    </script>
+    <footer
+        class="w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 border-t border-outline-variant/30 text-xs tracking-wider uppercase bg-surface-container-low text-on-surface-variant font-label">
+        <div class="mb-4 md:mb-0">
+            © 2026 Hackfest. All rights reserved.
+        </div>
+        <div class="flex gap-6">
+            <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+            <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+            <a href="#" class="hover:text-primary transition-colors">Contact Support</a>
+        </div>
+    </footer>
+</body>
+
+</html>

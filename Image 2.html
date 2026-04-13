@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hackfest | Login &amp; Registration</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#434653",
+                        "on-tertiary-fixed": "#380d00",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "outline-variant": "#c3c6d5",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb59a",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#ffaa8a",
+                        "secondary": "#515f74",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#3a5f94",
+                        "on-primary-container": "#9cc0fb",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#8b2e01",
+                        "tertiary-fixed": "#ffdbcf",
+                        "surface-dim": "#d8dadc",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-background": "#191c1e",
+                        "surface-container-highest": "#e0e3e5",
+                        "secondary-container": "#d5e3fc",
+                        "on-surface": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "surface": "#f7f9fb",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eceef0",
+                        "on-tertiary-fixed-variant": "#802900",
+                        "on-secondary-container": "#57657a",
+                        "outline": "#737784",
+                        "surface-bright": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "tertiary": "#651f00",
+                        "on-primary-fixed": "#001b3c",
+                        "primary": "#063669",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-container": "#274e82",
+                        "surface-container-low": "#f2f4f6",
+                        "background": "#f7f9fb",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#d5e3ff",
+                        "inverse-primary": "#a7c8ff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "inverse-on-surface": "#eff1f3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #063669 0%, #274e82 100%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface flex flex-col min-h-screen">
+<div class="flex-grow flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden">
+<div class="absolute inset-0 z-0 opacity-10 pointer-events-none">
+<div class="absolute top-[-10%] right-[-5%] w-[40rem] h-[40rem] rounded-full bg-primary-container blur-[100px]"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[40rem] h-[40rem] rounded-full bg-secondary-fixed blur-[100px]"></div>
+</div>
+<div class="z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-0 overflow-hidden rounded-xl bg-surface-container-lowest shadow-[0_20px_40px_rgba(25,28,30,0.06)]">
+<div class="hidden md:flex hero-gradient p-12 flex-col justify-between text-on-primary">
+<div>
+<h1 class="font-headline font-black text-4xl tracking-tight mb-4">Hackfest</h1>
+<p class="text-primary-fixed opacity-90 text-lg leading-relaxed max-w-md">
+                        Join the next generation of architectural builders. Structure your team, solve complex challenges, and climb the leaderboard.
+                    </p>
+</div>
+<div class="space-y-8">
+<div class="flex items-start gap-4">
+<div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+<span class="material-symbols-outlined text-white">architecture</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg">Structured Logic</h3>
+<p class="text-sm text-primary-fixed/80">Every hunt is a blueprint for excellence.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm">
+<span class="material-symbols-outlined text-white">leaderboard</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg">Elite Competition</h3>
+<p class="text-sm text-primary-fixed/80">Compete with the industry's top technical minds.</p>
+</div>
+</div>
+</div>
+<div class="text-xs font-label tracking-widest uppercase opacity-60">
+                    Architectural Logic © 2024
+                </div>
+</div>
+<div class="p-8 md:p-12 flex flex-col">
+<div class="mb-10 text-center md:text-left">
+<h2 class="font-headline font-extrabold text-3xl text-primary tracking-tight mb-2">Access Portal</h2>
+<p class="text-on-surface-variant text-sm">Secure entry for Team Leads and Administrators.</p>
+</div>
+<div class="flex bg-surface-container-high p-1 rounded-lg mb-8">
+<button class="flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-200 bg-surface-container-lowest text-primary shadow-sm">
+                        Team Entry
+                    </button>
+<button class="flex-1 py-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-all duration-200">
+                        Admin Login
+                    </button>
+</div>
+<form class="space-y-5">
+<div class="space-y-1.5">
+<label class="block text-xs font-label uppercase tracking-wider text-on-surface-variant font-semibold">Team Identity</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">groups</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-surface-tint focus:bg-white transition-all text-sm outline-none placeholder:text-outline-variant" placeholder="Team Name" type="text"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="block text-xs font-label uppercase tracking-wider text-on-surface-variant font-semibold">Lead Contact</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-surface-tint focus:bg-white transition-all text-sm outline-none placeholder:text-outline-variant" placeholder="Lead Email Address" type="email"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="block text-xs font-label uppercase tracking-wider text-on-surface-variant font-semibold">Personnel</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">person_add</span>
+<select class="w-full pl-10 pr-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-surface-tint focus:bg-white transition-all text-sm outline-none appearance-none">
+<option>2 Members</option>
+<option>3 Members</option>
+<option>4 Members</option>
+</select>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="block text-xs font-label uppercase tracking-wider text-on-surface-variant font-semibold">Security</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-surface-tint focus:bg-white transition-all text-sm outline-none placeholder:text-outline-variant" placeholder="Password" type="password"/>
+</div>
+</div>
+</div>
+<div class="pt-4 flex flex-col gap-4">
+<button class="hero-gradient text-on-primary font-label text-sm py-3.5 rounded-xl font-bold tracking-wide transition-all active:scale-95 shadow-lg shadow-primary/20">
+                            REGISTER TEAM
+                        </button>
+<div class="flex items-center justify-center gap-2 text-xs text-on-surface-variant">
+<span>Already registered?</span>
+<a class="text-primary font-bold hover:underline" href="#">Lead Login</a>
+</div>
+</div>
+</form>
+<div class="mt-auto pt-10 border-t border-surface-container flex flex-col gap-2">
+<button class="text-xs font-label tracking-widest text-on-surface-variant uppercase flex items-center justify-center gap-2 hover:text-primary transition-colors py-2">
+<span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+                        System Administrator Dashboard
+                    </button>
+</div>
+</div>
+</div>
+<div class="mt-8 text-on-surface-variant text-[10px] uppercase tracking-[0.2em] opacity-50 flex gap-8">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">verified_user</span> 256-bit Encryption</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">cloud_done</span> Cloud Sync Active</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">monitoring</span> Real-time Monitoring</span>
+</div>
+</div>
+<footer class="w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 bg-slate-100 dark:bg-slate-950 font-inter text-xs tracking-wider uppercase">
+<div class="text-slate-500 dark:text-slate-400 mb-4 md:mb-0">
+            © 2024 Hackfest Architectural Logic. All rights reserved.
+        </div>
+<div class="flex gap-6">
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors opacity-80 hover:opacity-100" href="#">Contact Support</a>
+</div>
+</footer>
+</body></html>

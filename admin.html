@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackfest | Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: "var(--primary)" } } } }
+    </script>
+    <style>
+        .admin-layout { display: grid; grid-template-columns: 240px 1fr; gap: 2rem; align-items: start; }
+        @media (max-width: 768px) { .admin-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+    <header class="nav-bar">
+        <div class="nav-brand flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">admin_panel_settings</span>
+            Hackfest Admin
+        </div>
+        <div class="nav-actions">
+            <span class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mr-2">System Administrator</span>
+            <button id="logoutBtn" class="btn btn-ghost btn-sm">Logout</button>
+        </div>
+    </header>
+
+    <main class="page-main relative">
+        <div class="admin-layout">
+            
+            <!-- Sidebar -->
+            <aside class="card p-4 sticky top-[88px]">
+                <div class="sidebar-tabs" id="adminTabs">
+                    <button class="sidebar-tab active" data-target="panel-hackathons">
+                        <span class="material-symbols-outlined text-[1.25rem]">event</span> Hackathons
+                    </button>
+                    <button class="sidebar-tab" data-target="panel-monitoring">
+                        <span class="material-symbols-outlined text-[1.25rem]">monitoring</span> Monitoring
+                    </button>
+                    <button class="sidebar-tab" data-target="panel-settings">
+                        <span class="material-symbols-outlined text-[1.25rem]">admin_panel_settings</span> Settings
+                    </button>
+                    <div class="section-divider my-2"></div>
+                    <a href="leaderboard.html" class="sidebar-tab">
+                        <span class="material-symbols-outlined text-[1.25rem]">leaderboard</span> Live Leaderboard
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="flex flex-col gap-6 w-full max-w-4xl">
+                
+                <!-- Toast Alert -->
+                <div id="toastContainer" class="toast-container hidden"></div>
+
+                <!-- PANEL 1: HACKATHONS -->
+                <div id="panel-hackathons" class="admin-panel animate-fade-in block">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-display text-primary">Hackathons</h2>
+                        <button class="btn btn-primary" id="btnCreateHackathon">
+                            <span class="material-symbols-outlined">add</span> Create New
+                        </button>
+                    </div>
+
+                    <!-- Hackathons List -->
+                    <div class="space-y-4" id="hackathonsList">
+                        <div class="spinner mx-auto my-12"></div>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: MONITORING -->
+                <div id="panel-monitoring" class="admin-panel animate-fade-in hidden">
+                    <h2 class="text-display text-primary mb-6">System Monitoring</h2>
+                    
+                    <div class="grid-3 mb-8">
+                        <div class="stat-card">
+                            <span class="stat-label">Total Teams</span>
+                            <div class="stat-value" id="monTotalTeams">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Active Users</span>
+                            <div class="stat-value" id="monTotalUsers">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Total Submissions</span>
+                            <div class="stat-value" id="monSubmissions">0</div>
+                        </div>
+                    </div>
+
+                    <div class="card overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Team Name</th>
+                                    <th>Lead Email</th>
+                                    <th>Members</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teamsTableBody">
+                                <!-- Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PANEL 3: SETTINGS -->
+                <div id="panel-settings" class="admin-panel animate-fade-in hidden">
+                    <h2 class="text-display text-primary mb-6">Admin Settings</h2>
+
+                    <div class="grid-2 gap-6">
+                        <!-- Update Password Card -->
+                        <div class="card p-6 space-y-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="material-symbols-outlined text-primary">lock_reset</span>
+                                <h3 class="text-title text-primary">Update Password</h3>
+                            </div>
+                            <p class="text-sm text-on-surface-variant">Change the password for the currently logged-in admin account.</p>
+                            <div class="form-group">
+                                <label class="form-label">New Password</label>
+                                <input type="password" id="newPassInput" class="form-input" placeholder="Min 6 characters" minlength="6">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirm New Password</label>
+                                <input type="password" id="confirmPassInput" class="form-input" placeholder="Re-enter password">
+                            </div>
+                            <button class="btn btn-primary btn-full" id="btnUpdatePass">
+                                <span class="material-symbols-outlined text-[18px]">save</span> Update Password
+                            </button>
+                        </div>
+
+                        <!-- Add New Admin Card -->
+                        <div class="card p-6 space-y-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="material-symbols-outlined text-primary">person_add</span>
+                                <h3 class="text-title text-primary">Add New Admin</h3>
+                            </div>
+                            <p class="text-sm text-on-surface-variant">Grant admin privileges to a new user. They will be able to log in and manage all hackathons.</p>
+                            <div class="form-group">
+                                <label class="form-label">Admin Email</label>
+                                <input type="email" id="newAdminEmail" class="form-input" placeholder="admin@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Admin Password</label>
+                                <input type="password" id="newAdminPass" class="form-input" placeholder="Min 6 characters" minlength="6">
+                            </div>
+                            <button class="btn btn-secondary btn-full" id="btnAddAdmin">
+                                <span class="material-symbols-outlined text-[18px]">add</span> Create Admin Account
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Existing Admins Table -->
+                    <div class="card overflow-x-auto mt-6">
+                        <div class="p-4 border-b border-outline-variant/30 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">manage_accounts</span>
+                            <h3 class="text-title text-primary">All Admin Accounts</h3>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: HACKATHON CRUD -->
+    <div class="modal-overlay" id="hackathonModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="hModalTitle">Create Hackathon</h3>
+                <button class="modal-close" onclick="closeModal('hackathonModal')"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <form id="hackathonForm" class="modal-body">
+                <input type="hidden" id="hId">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" id="hName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="hDesc" class="form-textarea" rows="3" required></textarea>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Start Time</label>
+                        <input type="datetime-local" id="hStart" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Time</label>
+                        <input type="datetime-local" id="hEnd" class="form-input" required>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Registration Open</label>
+                        <label class="toggle-switch mt-1">
+                            <input type="checkbox" id="hReg" checked>
+                            <div class="toggle-track"></div>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Max Team Size</label>
+                        <input type="number" id="hMaxTeam" class="form-input" min="1" max="100" value="4" required>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('hackathonModal')">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnSaveHackathon">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: QUESTIONS / ROUNDS MGR -->
+    <div class="modal-overlay" id="questionsModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="qModalTitle">Manage Rounds</h3>
+                <button class="modal-close" onclick="closeModal('questionsModal')"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="modal-body bg-surface-container-low min-h-[400px]">
+                
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-title text-primary" id="qmHackName">Hackathon Name</h4>
+                    <button class="btn btn-secondary btn-sm" id="btnAppndRound"><span class="material-symbols-outlined text-[16px]">add</span> ADD ROUND</button>
+                </div>
+
+                <div id="roundsContainer" class="space-y-6">
+                    <!-- Loaded dynamically -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT QUESTION -->
+    <div class="modal-overlay" id="editQuestionModal" style="z-index: 250;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Question</h3>
+                <button class="modal-close" onclick="closeModal('editQuestionModal')"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <form id="qForm" class="modal-body">
+                <input type="hidden" id="qRoundId">
+                <input type="hidden" id="qId">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" id="qTitleInput" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description / Problem Statement (Use '\n' for new lines)</label>
+                    <textarea id="qDescInput" class="form-textarea" rows="4" required></textarea>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Correct Answer</label>
+                        <input type="text" id="qAnswerInput" class="form-input font-mono" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Expected Format</label>
+                        <select id="qTypeInput" class="form-select">
+                            <option value="string">Text String</option>
+                            <option value="integer">Integer Number</option>
+                            <option value="decimal">Decimal (Float)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Case Sensitive Validation?</label>
+                    <label class="toggle-switch mt-1">
+                        <input type="checkbox" id="qCaseInput">
+                        <div class="toggle-track"></div>
+                    </label>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('editQuestionModal')">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnSaveQuestion">Save Question</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: VIEW TEAMS & MEMBERS -->
+    <div class="modal-overlay" id="viewTeamsModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Participating Teams</h3>
+                <button class="modal-close" onclick="closeModal('viewTeamsModal')"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="modal-body bg-surface-container-low min-h-[400px]">
+                <h4 class="text-title text-primary mb-4" id="tmHackName">Hackathon Name</h4>
+                <div id="participatingTeamsContainer" class="space-y-6">
+                    <!-- Dynamic Team lists -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, requireAuth, isAdmin, formatDateTime, hackathonStatus } from './config.js';
+
+        let adminUser;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            adminUser = await requireAuth('index.html');
+            if(!adminUser) return;
+            const checkAdmin = await isAdmin(adminUser);
+            if(!checkAdmin) {
+                alert("Unauthorized. Admin access only.");
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            initTabs();
+            loadHackathonsList();
+
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            });
+        });
+
+        window.showToast = (msg, type = 'success') => {
+            const container = document.getElementById('toastContainer');
+            container.classList.remove('hidden');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `<span class="material-symbols-outlined">${type==='success'?'check_circle':'error'}</span> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        window.closeModal = (id) => { document.getElementById(id).classList.remove('open'); }
+        window.openModal = (id) => { document.getElementById(id).classList.add('open'); }
+
+        // ==========================================
+        // TABS
+        // ==========================================
+        function initTabs() {
+            const tabs = document.querySelectorAll('.sidebar-tab[data-target]');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.admin-panel').forEach(p => p.classList.add('hidden'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.target).classList.remove('hidden');
+
+                    if(tab.dataset.target === 'panel-monitoring') loadMonitoring();
+                });
+            });
+        }
+
+        // ==========================================
+        // HACKATHON CRUD
+        // ==========================================
+
+        document.getElementById('btnCreateHackathon').addEventListener('click', () => {
+            document.getElementById('hModalTitle').textContent = "Create Hackathon";
+            document.getElementById('hackathonForm').reset();
+            document.getElementById('hId').value = '';
+            openModal('hackathonModal');
+        });
+
+        document.getElementById('btnSaveHackathon').addEventListener('click', async () => {
+            const data = {
+                name: document.getElementById('hName').value,
+                description: document.getElementById('hDesc').value,
+                start_time: document.getElementById('hStart').value,
+                end_time: document.getElementById('hEnd').value,
+                max_team_size: parseInt(document.getElementById('hMaxTeam').value, 10),
+                registration_open: document.getElementById('hReg').checked
+            };
+            const id = document.getElementById('hId').value;
+
+            try {
+                if(id) {
+                    const { error } = await supabase.from('hackathons').update(data).eq('id', id);
+                    if(error) throw error;
+                    showToast("Updated successfully");
+                } else {
+                    const { error } = await supabase.from('hackathons').insert([data]);
+                    if(error) throw error;
+                    showToast("Created successfully");
+                }
+                closeModal('hackathonModal');
+                loadHackathonsList();
+            } catch(e) { showToast(e.message, 'error'); }
+        });
+
+        async function loadHackathonsList() {
+            const { data, error } = await supabase.from('hackathons').select('*, rounds(count)').order('start_time', {ascending: false});
+            if(error) return console.error(error);
+
+            const container = document.getElementById('hackathonsList');
+            container.innerHTML = '';
+
+            data.forEach(h => {
+                const status = hackathonStatus(h);
+                let badgeClass = status === 'ongoing' ? 'badge-ongoing' : status === 'upcoming' ? 'badge-upcoming' : 'badge-closed';
+                
+                const div = document.createElement('div');
+                div.className = "card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition-shadow";
+                div.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-title text-primary">${h.name}</h3>
+                            <span class="badge ${badgeClass}">${status}</span>
+                            ${!h.registration_open ? '<span class="badge badge-closed-reg">Reg Closed</span>' : ''}
+                        </div>
+                        <div class="text-sm text-on-surface-variant flex items-center gap-4">
+                            <span><span class="material-symbols-outlined text-[16px] align-text-bottom">schedule</span> ${formatDateTime(h.start_time)}</span>
+                            <span><span class="material-symbols-outlined text-[16px] align-text-bottom">layers</span> ${h.rounds[0].count} Rounds</span>
+                            <span><span class="material-symbols-outlined text-[16px] align-text-bottom">group</span> Max ${h.max_team_size || 4} Members</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto mt-4 md:mt-0">
+                        <button class="btn btn-ghost btn-sm flex-1 md:flex-none" onclick="editHackathon('${h.id}')">Edit</button>
+                        <button class="btn btn-secondary btn-sm flex-1 md:flex-none" onclick="manageRounds('${h.id}', '${h.name.replace(/'/g,"\\'")}')">Questions</button>
+                        <button class="btn btn-primary btn-sm flex-1 md:flex-none" onclick="viewTeams('${h.id}', '${h.name.replace(/'/g,"\\'")}')"><span class="material-symbols-outlined text-[16px] mr-1">groups</span> View Teams</button>
+                        <button class="btn btn-danger btn-sm px-3" onclick="deleteHackathon('${h.id}')"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.editHackathon = async (id) => {
+            const { data, error } = await supabase.from('hackathons').select('*').eq('id', id).single();
+            if(error) return showToast(error.message, 'error');
+            
+            document.getElementById('hModalTitle').textContent = "Edit Hackathon";
+            document.getElementById('hId').value = data.id;
+            document.getElementById('hName').value = data.name;
+            document.getElementById('hDesc').value = data.description;
+            // HTML datetime-local needs YYYY-MM-DDThh:mm format
+            document.getElementById('hStart').value = new Date(data.start_time).toISOString().slice(0,16);
+            document.getElementById('hEnd').value = new Date(data.end_time).toISOString().slice(0,16);
+            document.getElementById('hMaxTeam').value = data.max_team_size || 4;
+            document.getElementById('hReg').checked = data.registration_open;
+            
+            openModal('hackathonModal');
+        };
+
+        window.deleteHackathon = async (id) => {
+            if(!confirm("Are you sure? This deletes all rounds, questions, and team progress permanently!")) return;
+            const { error } = await supabase.from('hackathons').delete().eq('id', id);
+            if(error) showToast(error.message, 'error');
+            else { showToast("Deleted"); loadHackathonsList(); }
+        }
+
+        // ==========================================
+        // ROUNDS & QUESTIONS
+        // ==========================================
+        let actTgtHackathon = null;
+
+        window.manageRounds = async (hackathonId, hackName) => {
+            actTgtHackathon = hackathonId;
+            document.getElementById('qmHackName').textContent = hackName;
+            await loadRoundsData();
+            openModal('questionsModal');
+        }
+
+        async function loadRoundsData() {
+            const container = document.getElementById('roundsContainer');
+            container.innerHTML = '<div class="spinner mx-auto"></div>';
+
+            const { data: rounds, error } = await supabase
+                .from('rounds')
+                .select('*, questions(*)')
+                .eq('hackathon_id', actTgtHackathon)
+                .order('round_number', {ascending: true});
+
+            if(error) { container.innerHTML = ''; return showToast(error.message, 'error'); }
+            
+            container.innerHTML = '';
+            if(rounds.length === 0) {
+                container.innerHTML = `<p class="text-sm text-center text-outline">No rounds added yet.</p>`;
+            }
+
+            rounds.forEach(r => {
+                const q = r.questions[0]; // Assuming 1 question per round for this arch
+                const div = document.createElement('div');
+                div.className = "bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/50 shadow-sm";
+                
+                let qHtml = '';
+                if(q) {
+                    qHtml = `
+                        <div class="mt-4 p-4 bg-surface-container-low rounded-lg flex justify-between items-start">
+                            <div class="truncate pr-4">
+                                <div class="font-bold text-primary text-sm mb-1">${q.title}</div>
+                                <div class="text-xs text-on-surface-variant font-mono">Ans: ${q.answer} | Type: ${q.answer_type}</div>
+                            </div>
+                            <button class="btn btn-ghost btn-sm bg-white" onclick="editQuestion('${q.id}', '${r.id}')">Edit Q</button>
+                        </div>
+                    `;
+                } else {
+                    qHtml = `<div class="mt-4"><button class="btn btn-secondary btn-sm" onclick="addQuestion('${r.id}')"><span class="material-symbols-outlined text-[16px]">add</span> Add Question</button></div>`;
+                }
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <h5 class="font-headline font-bold text-lg text-primary">Round ${r.round_number}</h5>
+                        <button class="text-error hover:underline text-xs font-bold uppercase tracking-widest" onclick="deleteRound('${r.id}')">Delete Round</button>
+                    </div>
+                    ${qHtml}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        document.getElementById('btnAppndRound').addEventListener('click', async () => {
+            const { data: exRds } = await supabase.from('rounds').select('round_number').eq('hackathon_id', actTgtHackathon).order('round_number', {ascending:false}).limit(1);
+            let nextNum = exRds && exRds.length > 0 ? exRds[0].round_number + 1 : 1;
+
+            const { error } = await supabase.from('rounds').insert([{ hackathon_id: actTgtHackathon, round_number: nextNum }]);
+            if(error) showToast(error.message, 'error');
+            else loadRoundsData();
+        });
+
+        window.deleteRound = async (id) => {
+            if(!confirm("Delete round and its question?")) return;
+            await supabase.from('rounds').delete().eq('id', id);
+            loadRoundsData();
+        }
+
+        window.addQuestion = (roundId) => {
+            document.getElementById('qForm').reset();
+            document.getElementById('qRoundId').value = roundId;
+            document.getElementById('qId').value = '';
+            openModal('editQuestionModal');
+        }
+
+        window.editQuestion = async (qId, rId) => {
+            const { data, error } = await supabase.from('questions').select('*').eq('id', qId).single();
+            if(error) return console.error(error);
+            document.getElementById('qRoundId').value = rId;
+            document.getElementById('qId').value = qId;
+            document.getElementById('qTitleInput').value = data.title;
+            document.getElementById('qDescInput').value = data.description;
+            document.getElementById('qAnswerInput').value = data.answer;
+            document.getElementById('qTypeInput').value = data.answer_type;
+            document.getElementById('qCaseInput').checked = data.case_sensitive;
+            openModal('editQuestionModal');
+        }
+
+        document.getElementById('btnSaveQuestion').addEventListener('click', async () => {
+            const data = {
+                round_id: document.getElementById('qRoundId').value,
+                title: document.getElementById('qTitleInput').value,
+                description: document.getElementById('qDescInput').value,
+                answer: document.getElementById('qAnswerInput').value,
+                answer_type: document.getElementById('qTypeInput').value,
+                case_sensitive: document.getElementById('qCaseInput').checked
+            };
+            const id = document.getElementById('qId').value;
+            
+            try {
+                if(id) await supabase.from('questions').update(data).eq('id', id);
+                else await supabase.from('questions').insert([data]);
+                
+                showToast("Saved Question");
+                closeModal('editQuestionModal');
+                loadRoundsData();
+            } catch(e) { showToast(e.message, 'error'); }
+        });
+
+        // ==========================================
+        // MONITORING
+        // ==========================================
+        async function loadMonitoring() {
+            // Count teams
+            const { count: tCount } = await supabase.from('teams').select('*', { count: 'exact', head: true });
+            document.getElementById('monTotalTeams').textContent = tCount || 0;
+
+            // Count members + leads
+            const { count: uCount } = await supabase.from('team_members').select('*', { count: 'exact', head: true });
+            document.getElementById('monTotalUsers').textContent = uCount || 0;
+
+            // Count submissions
+            const { count: sCount } = await supabase.from('submissions').select('*', { count: 'exact', head: true });
+            document.getElementById('monSubmissions').textContent = sCount || 0;
+
+            // Teams Table
+            const { data: teamsData, error } = await supabase.from('teams').select('*, team_members(count)').order('created_at', {ascending: false});
+            if(error) return console.error(error);
+
+            const tbody = document.getElementById('teamsTableBody');
+            tbody.innerHTML = '';
+            teamsData.forEach(t => {
+                const count = t.team_members?.[0]?.count || 0;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="font-bold text-primary">${t.team_name}</td>
+                    <td>${t.lead_email}</td>
+                    <td><span class="badge bg-surface-container-high">${count}</span></td>
+                    <td class="text-xs font-mono text-outline">${formatDateTime(t.created_at)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ==========================================
+        // TEAMS MANAGEMENT MODAL
+        // ==========================================
+        window.viewTeams = async (hackathonId, hackName) => {
+            document.getElementById('tmHackName').textContent = hackName;
+            const container = document.getElementById('participatingTeamsContainer');
+            container.innerHTML = '<div class="spinner mx-auto my-8"></div>';
+            openModal('viewTeamsModal');
+
+            // Find all teams participating in this hackathon
+            const { data: progressData, error: pErr } = await supabase.from('progress').select('team_id').eq('hackathon_id', hackathonId);
+            if(pErr || !progressData) return container.innerHTML = `<p class="text-error">Error fetching teams.</p>`;
+            
+            if(progressData.length === 0) {
+                return container.innerHTML = `<p class="text-sm text-outline p-4 text-center">No teams have joined this event yet.</p>`;
+            }
+
+            const teamIds = progressData.map(p => p.team_id);
+            
+            // Get teams and their members
+            const { data: teamsObj, error: tErr } = await supabase.from('teams').select('*, team_members(*)');
+            if(tErr) return console.error(tErr);
+
+            const participatingTeams = teamsObj.filter(t => teamIds.includes(t.id));
+
+            container.innerHTML = '';
+            participatingTeams.forEach(team => {
+                const div = document.createElement('div');
+                div.className = "bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/50 shadow-sm";
+
+                // READ-ONLY: Admin can only VIEW members, not add or remove
+                let membersList = team.team_members.map(m => `
+                    <div class="flex justify-between items-center bg-surface-container-highest p-3 rounded text-sm mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="h-7 w-7 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold shrink-0">${m.name.substring(0,2).toUpperCase()}</div>
+                            <div>
+                                <div class="font-semibold text-primary">${m.name}</div>
+                                <div class="text-xs text-outline">${m.email}</div>
+                            </div>
+                        </div>
+                        <span class="badge ${m.role === 'lead' ? 'bg-primary/20 text-primary' : 'bg-surface-container-high'} text-[10px]">${m.role.toUpperCase()}</span>
+                    </div>
+                `).join('');
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h5 class="font-headline font-bold text-lg text-primary">${team.team_name}</h5>
+                        <span class="badge bg-surface-container-high">${team.team_members.length} Members</span>
+                    </div>
+                    <p class="text-xs text-outline mb-3">Lead: ${team.lead_email}</p>
+                    <div>${membersList}</div>
+                `;
+                container.appendChild(div);
+            });
+        };
+
+        // ==========================================
+        // ADMIN SETTINGS PANEL
+        // ==========================================
+        async function loadAdminsTable() {
+            const { data } = await supabase.from('admins').select('*');
+            const tbody = document.getElementById('adminsTableBody');
+            tbody.innerHTML = '';
+            (data || []).forEach(a => {
+                const tr = document.createElement('tr');
+                const isSelf = a.email === adminUser?.email;
+                tr.innerHTML = `
+                    <td class="font-medium text-primary">${a.email}</td>
+                    <td><span class="badge bg-primary/20 text-primary text-[10px]">${a.role || 'admin'}</span></td>
+                    <td class="text-right">
+                        ${!isSelf ? `<button class="text-error text-xs font-bold hover:underline" onclick="deleteAdmin('${a.id}')">Remove</button>` : '<span class="text-xs text-outline">Current Account</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.deleteAdmin = async (id) => {
+            if(!confirm('Remove this admin account?')) return;
+            await supabase.from('admins').delete().eq('id', id);
+            showToast('Admin removed');
+            loadAdminsTable();
+        };
+
+        document.getElementById('btnUpdatePass').addEventListener('click', async () => {
+            const np = document.getElementById('newPassInput').value;
+            const cp = document.getElementById('confirmPassInput').value;
+            if(np.length < 6) return showToast('Password must be at least 6 characters', 'error');
+            if(np !== cp) return showToast('Passwords do not match', 'error');
+            
+            // Update in mock DB / Supabase admins table
+            const { error } = await supabase.from('admins').update({ password: np }).eq('email', adminUser.email);
+            if(error) return showToast(error.message, 'error');
+            showToast('Password updated successfully!');
+            document.getElementById('newPassInput').value = '';
+            document.getElementById('confirmPassInput').value = '';
+        });
+
+        document.getElementById('btnAddAdmin').addEventListener('click', async () => {
+            const email = document.getElementById('newAdminEmail').value.trim();
+            const pass = document.getElementById('newAdminPass').value;
+            if(!email || !pass) return showToast('Email and password are required', 'error');
+            if(pass.length < 6) return showToast('Password must be at least 6 characters', 'error');
+
+            const { error } = await supabase.from('admins').insert([{ email, password: pass, role: 'admin' }]);
+            if(error) return showToast(error.message, 'error');
+            
+            showToast(`Admin ${email} created!`);
+            document.getElementById('newAdminEmail').value = '';
+            document.getElementById('newAdminPass').value = '';
+            loadAdminsTable();
+        });
+
+        // Load admins table when Settings tab is first opened (hooked via initTabs)
+        const origInitTabs = initTabs;
+        const settingsTab = document.querySelector('[data-target="panel-settings"]');
+        if(settingsTab) {
+            settingsTab.addEventListener('click', loadAdminsTable);
+        }
+
+    </script>
+    <footer class="w-full py-8 mt-auto flex flex-col md:flex-row justify-between items-center px-8 border-t border-outline-variant/30 text-xs tracking-wider uppercase bg-surface-container-low text-on-surface-variant font-label">
+        <div class="mb-4 md:mb-0">
+            © 2026 Hackfest. All rights reserved.
+        </div>
+        <div class="flex gap-6">
+            <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+            <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+            <a href="#" class="hover:text-primary transition-colors">Contact Support</a>
+        </div>
+    </footer>
+</body>
+</html>
