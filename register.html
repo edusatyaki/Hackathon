@@ -57,18 +57,35 @@
                 Back to Login
             </a>
 
-            <h1 class="text-3xl font-headline font-extrabold text-primary mb-2">Register Team</h1>
-            <p class="text-on-surface-variant mb-6 text-sm">Form your squad of up to 4 members to compete in elite architectural hunts.</p>
+            <h1 class="text-3xl font-headline font-extrabold text-primary mb-2">Team Registration</h1>
+            <p class="text-on-surface-variant mb-6 text-sm">Join the architectural hunt. Verification via Google is mandatory to ensure team integrity.</p>
 
             <div id="errorAlert" class="hidden bg-error-container text-on-error-container p-4 rounded-lg font-medium text-sm mb-6 flex items-start gap-3">
                 <span class="material-symbols-outlined text-error mt-0.5">error</span>
                 <span id="errorMsg"></span>
             </div>
 
-            <form id="registerForm" class="space-y-8">
+            <!-- STEP 1: AUTHENTICATE -->
+            <div id="authStep" class="space-y-6">
+                <div class="bg-surface-container-low p-8 rounded-xl border border-outline-variant/30 text-center">
+                    <div class="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="material-symbols-outlined text-primary text-3xl">verified_user</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-primary mb-2">Step 1: Authenticate</h3>
+                    <p class="text-sm text-on-surface-variant mb-8">Sign in with your Google account to verify your identity and start forming your team.</p>
+                    
+                    <button type="button" class="btn btn-primary btn-lg btn-full shadow-lg shadow-primary/20 flex items-center justify-center gap-3" id="googleRegBtn">
+                        <span class="material-symbols-outlined">google</span>
+                        AUTHENTICATE WITH GOOGLE
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: TEAM DETAILS (Initially Hidden) -->
+            <form id="registerForm" class="space-y-8 hidden">
                 <!-- Team Core -->
                 <div class="bg-surface-container-low p-6 rounded-xl space-y-5">
-                    <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Team Identity</h3>
+                    <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Step 2: Team Identity</h3>
                     
                     <div class="form-group">
                         <label class="form-label">Team Name <span class="text-error">*</span></label>
@@ -77,37 +94,20 @@
                             <input type="text" id="teamName" class="form-input" placeholder="e.g. LogicKnights" required maxlength="50">
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="form-group">
-                            <label class="form-label">Password <span class="text-error">*</span></label>
-                            <div class="input-icon-wrap">
-                                <span class="material-symbols-outlined input-icon">lock</span>
-                                <input type="password" id="teamPassword" class="form-input" placeholder="••••••••" required minlength="6">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Confirm Password <span class="text-error">*</span></label>
-                            <div class="input-icon-wrap">
-                                <span class="material-symbols-outlined input-icon">lock_reset</span>
-                                <input type="password" id="teamPasswordConfirm" class="form-input" placeholder="••••••••" required minlength="6">
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Team Lead -->
-                <div class="bg-surface-container-low p-6 rounded-xl space-y-5 border-l-4 border-primary">
-                    <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Team Lead</h3>
+                <!-- Team Lead (Read Only) -->
+                <div class="bg-surface-container-low p-6 rounded-xl space-y-5 border-l-4 border-primary/30">
+                    <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Team Lead (Verified)</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div class="form-group">
-                            <label class="form-label">Full Name <span class="text-error">*</span></label>
-                            <input type="text" id="leadName" class="form-input" placeholder="Jane Doe" required>
+                            <label class="form-label text-outline">Lead Name</label>
+                            <input type="text" id="leadName" class="form-input bg-surface-container-lowest" disabled>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Email Address <span class="text-error">*</span></label>
-                            <input type="email" id="leadEmail" class="form-input" placeholder="lead@team.com" required>
+                            <label class="form-label text-outline">Lead Email</label>
+                            <input type="email" id="leadEmail" class="form-input bg-surface-container-lowest" disabled>
                         </div>
                     </div>
                 </div>
@@ -115,7 +115,7 @@
                 <!-- Additional Members -->
                 <div class="bg-surface-container-low p-6 rounded-xl space-y-5">
                     <div class="flex items-center justify-between">
-                        <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Members (Optional)</h3>
+                        <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Squad Roster (Optional)</h3>
                         <button type="button" id="addMemberBtn" class="text-xs font-semibold text-primary hover:bg-surface-container-highest px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
                             <span class="material-symbols-outlined text-[14px]">add</span> Add Member
                         </button>
@@ -128,20 +128,9 @@
 
                 <div class="pt-4">
                     <button type="submit" id="submitBtn" class="btn btn-primary btn-lg btn-full text-[1rem]">
-                        CREATE TEAM & REGISTER
+                        COMPLETE TEAM REGISTRATION
                     </button>
                 </div>
-
-                <div class="flex items-center gap-4 my-2">
-                    <div class="h-[1px] bg-outline-variant flex-grow"></div>
-                    <span class="text-[10px] text-outline uppercase tracking-widest font-bold">OR</span>
-                    <div class="h-[1px] bg-outline-variant flex-grow"></div>
-                </div>
-
-                <button type="button" class="btn btn-ghost btn-full border-outline text-on-surface hover:bg-surface-container-high transition-all flex items-center justify-center gap-3" id="googleRegBtn">
-                    <img src="https://www.google.com/favicon.ico" alt="Google" class="w-4 h-4">
-                    REGISTER WITH GOOGLE
-                </button>
             </form>
             </div>
         </div>
@@ -167,25 +156,17 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const user = await getCurrentUser();
             if (user) {
-                // If they are redirected here but have a team, send them back to index/dashboard
-                // (Already handled in index.html, but safe here too)
-                
-                // Pre-fill lead info from Google/Auth session
+                // Pre-fill lead info from Google session
                 if (user.email) {
                     document.getElementById('leadEmail').value = user.email;
-                    document.getElementById('leadEmail').disabled = true;
-                    // Also hide password fields as they are handled by Google
-                    document.getElementById('teamPassword').required = false;
-                    document.getElementById('teamPasswordConfirm').required = false;
-                    document.getElementById('teamPassword').closest('.grid').classList.add('hidden');
                 }
                 if (user.user_metadata?.name) {
                     document.getElementById('leadName').value = user.user_metadata.name;
                 }
                 
-                // Change button text
-                document.getElementById('submitBtn').textContent = 'COMPLETE REGISTRATION';
-                document.getElementById('googleRegBtn').classList.add('hidden');
+                // Show Step 2, hide Step 1
+                document.getElementById('authStep').classList.add('hidden');
+                document.getElementById('registerForm').classList.remove('hidden');
             }
         });
 
@@ -255,16 +236,8 @@
             const btn = document.getElementById('submitBtn');
 
             const teamName = document.getElementById('teamName').value.trim();
-            const password = document.getElementById('teamPassword').value;
-            const passwordConfirm = document.getElementById('teamPasswordConfirm').value;
-            const leadName = document.getElementById('leadName').value.trim();
-            const leadEmail = document.getElementById('leadEmail').value.trim();
-
-            if (password !== passwordConfirm) {
-                errorMsg.textContent = "Passwords do not match.";
-                errorAlert.classList.remove('hidden');
-                return;
-            }
+            const leadName = document.getElementById('leadName').value; // from hidden/disabled input
+            const leadEmail = document.getElementById('leadEmail').value; // from hidden/disabled input
 
             // Gather additional members
             const memberRows = document.querySelectorAll('.member-row');
@@ -284,25 +257,11 @@
             }
 
             btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> PROCESSING...';
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> FINISHING...';
 
             try {
-                let user;
-                const existingUser = await getCurrentUser();
-
-                if (!existingUser) {
-                    // 1. Sign up Lead in Supabase Auth (We use Auth for Leads)
-                    const { data: authData, error: authError } = await supabase.auth.signUp({
-                        email: leadEmail,
-                        password: password,
-                        options: { data: { name: leadName, role: 'student' } }
-                    });
-
-                    if (authError) throw authError;
-                    user = authData.user;
-                } else {
-                    user = existingUser;
-                }
+                const user = await getCurrentUser();
+                if (!user) throw new Error("Please authenticate with Google first.");
 
                 // 2. Insert into `teams`
                 // Since user might need to confirm email if required by Supabase, 
@@ -342,7 +301,7 @@
                 errorMsg.textContent = err.message || "An error occurred during registration.";
                 errorAlert.classList.remove('hidden');
                 btn.disabled = false;
-                btn.innerHTML = existingUser ? 'COMPLETE REGISTRATION' : 'CREATE TEAM & REGISTER';
+                btn.innerHTML = 'COMPLETE TEAM REGISTRATION';
             }
         });
 

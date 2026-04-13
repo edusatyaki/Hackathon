@@ -110,74 +110,35 @@
                     class="hidden bg-error-container text-on-error-container p-3 rounded-lg text-sm mb-4"></div>
 
                 <!-- TEAM LOGIN FORM -->
-                <form id="teamForm" class="space-y-5">
-                    <div class="form-group">
-                        <label class="form-label">Lead Email Address</label>
-                        <div class="input-icon-wrap">
-                            <span class="material-symbols-outlined input-icon">mail</span>
-                            <input type="email" id="teamEmail" class="form-input" placeholder="leader@team.com"
-                                required>
-                        </div>
+                <div id="teamForm" class="space-y-6">
+                    <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 text-center">
+                        <span class="material-symbols-outlined text-primary text-4xl mb-4">google</span>
+                        <h4 class="text-title text-primary mb-2">Verified Team Access</h4>
+                        <p class="text-xs text-on-surface-variant mb-6">Team leads must use their registered Google account to access the dashboard.</p>
+                        
+                        <button type="button" class="btn btn-primary btn-lg btn-full shadow-lg shadow-primary/20 flex items-center justify-center gap-3" id="googleTeamBtn">
+                            CONTINUE WITH GOOGLE
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <div class="input-icon-wrap">
-                            <span class="material-symbols-outlined input-icon">lock</span>
-                            <input type="password" id="teamPassword" class="form-input" placeholder="••••••••" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-lg btn-full mt-2" id="teamSubmitBtn">LOGIN
-                        TEAM</button>
 
                     <div class="text-center text-sm text-on-surface-variant mt-4">
                         Don't have a team yet? <a href="register.html"
-                            class="font-bold text-primary hover:underline">Register Here</a>
+                            class="font-bold text-primary hover:underline">Register with Google</a>
                     </div>
-
-                    <div class="flex items-center gap-4 my-6">
-                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
-                        <span class="text-[10px] text-outline uppercase tracking-widest font-bold">OR</span>
-                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
-                    </div>
-
-                    <button type="button" class="btn btn-ghost btn-full border-outline text-on-surface hover:bg-surface-container-high transition-all flex items-center justify-center gap-3" id="googleTeamBtn">
-                        <img src="https://www.google.com/favicon.ico" alt="Google" class="w-4 h-4">
-                        CONTINUE WITH GOOGLE
-                    </button>
-                </form>
+                </div>
 
                 <!-- ADMIN LOGIN FORM -->
-                <form id="adminForm" class="space-y-5 hidden">
-                    <div class="form-group">
-                        <label class="form-label">Admin Identity</label>
-                        <div class="input-icon-wrap">
-                            <span class="material-symbols-outlined input-icon">admin_panel_settings</span>
-                            <input type="email" id="adminEmail" class="form-input" placeholder="admin@hackfest.com"
-                                required>
-                        </div>
+                <div id="adminForm" class="space-y-6 hidden">
+                    <div class="bg-surface-container-low p-6 rounded-xl border border-secondary text-center">
+                        <span class="material-symbols-outlined text-secondary text-4xl mb-4">admin_panel_settings</span>
+                        <h4 class="text-title text-secondary mb-2">System Administrator</h4>
+                        <p class="text-xs text-on-surface-variant mb-6">Access restricted to verified administrative Google accounts.</p>
+                        
+                        <button type="button" class="btn btn-secondary btn-lg btn-full shadow-lg shadow-secondary/20 flex items-center justify-center gap-3" id="googleAdminBtn">
+                            SYSTEM ACCESS WITH GOOGLE
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Security Key</label>
-                        <div class="input-icon-wrap">
-                            <span class="material-symbols-outlined input-icon">key</span>
-                            <input type="password" id="adminPassword" class="form-input" placeholder="••••••••"
-                                required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-secondary btn-lg btn-full mt-2" id="adminSubmitBtn">SYSTEM
-                        ACCESS</button>
-
-                    <div class="flex items-center gap-4 my-6">
-                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
-                        <span class="text-[10px] text-outline uppercase tracking-widest font-bold">OR</span>
-                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
-                    </div>
-
-                    <button type="button" class="btn btn-ghost btn-full border-outline text-on-surface hover:bg-surface-container-high transition-all flex items-center justify-center gap-3" id="googleAdminBtn">
-                        <img src="https://www.google.com/favicon.ico" alt="Google" class="w-4 h-4">
-                        SYSTEM ACCESS WITH GOOGLE
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -231,72 +192,6 @@
             errorAlert.textContent = msg;
             errorAlert.classList.remove('hidden');
         }
-
-        // Team Login
-        teamForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('teamEmail').value;
-            const password = document.getElementById('teamPassword').value;
-            const btn = document.getElementById('teamSubmitBtn');
-            errorAlert.classList.add('hidden');
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> VERIFYING...';
-
-            try {
-                // In Supabase, if auth is fully setup, it's signInWithPassword
-                // If it fails, they might not be registered in Auth. We will attempt it.
-                if (!supabase.auth) throw new Error("Supabase Auth required. Check config.js");
-
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-
-                // Validate if user is actually a team lead in DB
-                const { data: teamCheck } = await supabase.from('teams').select('id').eq('lead_email', email).single();
-                if (!teamCheck) {
-                    await supabase.auth.signOut();
-                    throw new Error("No team registered with this email.");
-                }
-
-                window.location.href = 'dashboard.html';
-            } catch (err) {
-                showError(err.message || 'Login failed. Verify credentials and active internet connection.');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'LOGIN TEAM';
-            }
-        });
-
-        // Admin Login
-        adminForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
-            const btn = document.getElementById('adminSubmitBtn');
-            errorAlert.classList.add('hidden');
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> ACCESSING...';
-
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-
-                // Validate admin row
-                const { data: adminCheck } = await supabase.from('admins').select('id').eq('email', email).single();
-                if (!adminCheck) {
-                    await supabase.auth.signOut();
-                    throw new Error("Unauthorized. Admin access required.");
-                }
-
-                window.location.href = 'admin.html';
-            } catch (err) {
-                showError(err.message || 'Admin login failed.');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'SYSTEM ACCESS';
-            }
-        });
 
         // Google Auth Click Handlers
         [document.getElementById('googleTeamBtn'), document.getElementById('googleAdminBtn')].forEach(btn => {
