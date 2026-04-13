@@ -137,15 +137,12 @@
                                 <span class="material-symbols-outlined text-primary">person_add</span>
                                 <h3 class="text-title text-primary">Add New Admin</h3>
                             </div>
-                            <p class="text-sm text-on-surface-variant">Grant admin privileges to a new user. They will be able to log in and manage all hackathons.</p>
+                            <p class="text-sm text-on-surface-variant">Grant admin access to an existing email. <strong>Note:</strong> You must first create the user in the <a href="https://app.supabase.com" target="_blank" class="text-primary font-bold hover:underline">Supabase Auth Dashboard</a> before adding them here.</p>
                             <div class="form-group">
                                 <label class="form-label">Admin Email</label>
                                 <input type="email" id="newAdminEmail" class="form-input" placeholder="admin@example.com">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Admin Password</label>
-                                <input type="password" id="newAdminPass" class="form-input" placeholder="Min 6 characters" minlength="6">
-                            </div>
+
                             <button class="btn btn-secondary btn-full" id="btnAddAdmin">
                                 <span class="material-symbols-outlined text-[18px]">add</span> Create Admin Account
                             </button>
@@ -702,9 +699,10 @@
             if(np.length < 6) return showToast('Password must be at least 6 characters', 'error');
             if(np !== cp) return showToast('Passwords do not match', 'error');
             
-            // Update in mock DB / Supabase admins table
-            const { error } = await supabase.from('admins').update({ password: np }).eq('email', adminUser.email);
+            // USE SUPABASE AUTH TO UPDATE PASSWORD
+            const { error } = await supabase.auth.updateUser({ password: np });
             if(error) return showToast(error.message, 'error');
+            
             showToast('Password updated successfully!');
             document.getElementById('newPassInput').value = '';
             document.getElementById('confirmPassInput').value = '';
@@ -712,16 +710,13 @@
 
         document.getElementById('btnAddAdmin').addEventListener('click', async () => {
             const email = document.getElementById('newAdminEmail').value.trim();
-            const pass = document.getElementById('newAdminPass').value;
-            if(!email || !pass) return showToast('Email and password are required', 'error');
-            if(pass.length < 6) return showToast('Password must be at least 6 characters', 'error');
+            if(!email) return showToast('Email is required', 'error');
 
-            const { error } = await supabase.from('admins').insert([{ email, password: pass, role: 'admin' }]);
+            const { error } = await supabase.from('admins').insert([{ email, role: 'admin' }]);
             if(error) return showToast(error.message, 'error');
             
-            showToast(`Admin ${email} created!`);
+            showToast(`Admin privileges granted to ${email}! Ensure they are created in Supabase Auth.`);
             document.getElementById('newAdminEmail').value = '';
-            document.getElementById('newAdminPass').value = '';
             loadAdminsTable();
         });
 
