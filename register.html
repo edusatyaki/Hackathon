@@ -135,6 +135,18 @@
             </div>
         </div>
     </div>
+    
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal w-[400px] text-center p-8">
+            <div class="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-primary text-5xl">mark_email_read</span>
+            </div>
+            <h3 class="text-2xl font-headline font-extrabold text-primary mb-2">Registration Successful!</h3>
+            <p class="text-on-surface-variant text-sm mb-8">We've sent a verification link to your lead email address. Please <strong>verify your email id</strong> to activate your team account.</p>
+            <button onclick="window.location.href='index.html'" class="btn btn-primary btn-full shadow-lg shadow-primary/20">Return to Login</button>
+        </div>
+    </div>
 
     <!-- Registration Logic -->
     <script type="module">
@@ -273,8 +285,13 @@
                 const { error: membersError } = await supabase.from('team_members').insert(allMembers);
                 if (membersError) throw membersError;
 
-                // Success! Supabase likely logged them in automatically via signUp.
-                window.location.href = 'dashboard.html';
+                // Success! 
+                // Check if session exists. If not, they likely need to verify email.
+                if (authData.session) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    document.getElementById('successModal').classList.add('open');
+                }
 
             } catch (err) {
                 errorMsg.textContent = err.message || "An error occurred during registration.";
