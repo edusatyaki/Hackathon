@@ -5,23 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hackfest | Login Portal</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "var(--primary)",
-                        "primary-container": "var(--primary-container)",
-                        "surface-container-low": "var(--surface-container-low)",
-                        "surface-container-lowest": "var(--surface-container-lowest)",
-                        "outline": "var(--outline)"
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="dist/output.css">
 </head>
 
 <body class="bg-surface font-body text-on-surface flex flex-col min-h-screen">
@@ -161,14 +145,13 @@
     </div>
 
     <script type="module">
-        import { supabase, getCurrentUser, isAdmin } from './config.js';
+        import { supabase } from './config.js';
 
-        // Check if already logged in
-        document.addEventListener('DOMContentLoaded', async () => {
-            const user = await getCurrentUser();
+        // Check if already logged in via sessionStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(sessionStorage.getItem('hf_user'));
             if (user) {
-                const admin = await isAdmin(user);
-                window.location.href = admin ? 'admin.html' : 'dashboard.html';
+                window.location.href = user.role === 'admin' ? 'admin.html' : 'dashboard.html';
             }
         });
 
@@ -199,10 +182,10 @@
             errorAlert.classList.remove('hidden');
         }
 
-        // Team Login
+        // Team Login — queries custom `teams` table directly (no Supabase Auth)
         teamForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('teamEmail').value;
+            const email = document.getElementById('teamEmail').value.trim().toLowerCase();
             const password = document.getElementById('teamPassword').value;
             const btn = document.getElementById('teamSubmitBtn');
             errorAlert.classList.add('hidden');
@@ -211,33 +194,34 @@
             btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> VERIFYING...';
 
             try {
-                // In Supabase, if auth is fully setup, it's signInWithPassword
-                // If it fails, they might not be registered in Auth. We will attempt it.
-                if (!supabase.auth) throw new Error("Supabase Auth required. Check config.js");
+                // Query the teams table directly — no Supabase Auth needed
+                const { data: team, error } = await supabase
+                    .from('teams')
+                    .select('id, team_name, lead_email, password_hash')
+                    .eq('lead_email', email)
+                    .single();
 
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
+                if (error || !team) throw new Error('No team registered with this email.');
 
-                // Validate if user is actually a team lead in DB
-                const { data: teamCheck } = await supabase.from('teams').select('id').eq('lead_email', email).single();
-                if (!teamCheck) {
-                    await supabase.auth.signOut();
-                    throw new Error("No team registered with this email.");
-                }
+                // Compare password (stored as plain text in password_hash for hackathon simplicity)
+                if (team.password_hash !== password) throw new Error('Incorrect password.');
+
+                // Store session manually
+                sessionStorage.setItem('hf_user', JSON.stringify({ id: team.id, email: team.lead_email, role: 'lead', team_name: team.team_name }));
 
                 window.location.href = 'dashboard.html';
             } catch (err) {
-                showError(err.message || 'Login failed. Verify credentials and active internet connection.');
+                showError(err.message || 'Login failed. Verify credentials.');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = 'LOGIN TEAM';
             }
         });
 
-        // Admin Login
+        // Admin Login — queries custom `admins` table directly (no Supabase Auth)
         adminForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('adminEmail').value;
+            const email = document.getElementById('adminEmail').value.trim().toLowerCase();
             const password = document.getElementById('adminPassword').value;
             const btn = document.getElementById('adminSubmitBtn');
             errorAlert.classList.add('hidden');
@@ -246,15 +230,20 @@
             btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> ACCESSING...';
 
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
+                // Query the admins table directly — no Supabase Auth needed
+                const { data: admin, error } = await supabase
+                    .from('admins')
+                    .select('id, email, password_hash')
+                    .eq('email', email)
+                    .single();
 
-                // Validate admin row
-                const { data: adminCheck } = await supabase.from('admins').select('id').eq('email', email).single();
-                if (!adminCheck) {
-                    await supabase.auth.signOut();
-                    throw new Error("Unauthorized. Admin access required.");
-                }
+                if (error || !admin) throw new Error('Admin account not found.');
+
+                // Compare password
+                if (admin.password_hash !== password) throw new Error('Incorrect security key.');
+
+                // Store session manually
+                sessionStorage.setItem('hf_user', JSON.stringify({ id: admin.id, email: admin.email, role: 'admin' }));
 
                 window.location.href = 'admin.html';
             } catch (err) {

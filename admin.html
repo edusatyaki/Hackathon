@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hackfest | Admin Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { primary: "var(--primary)" } } } }
-    </script>
+    <link rel="stylesheet" href="dist/output.css">
     <style>
         .admin-layout { display: grid; grid-template-columns: 240px 1fr; gap: 2rem; align-items: start; }
         @media (max-width: 768px) { .admin-layout { grid-template-columns: 1fr; } }
@@ -309,15 +305,14 @@
     </div>
 
     <script type="module">
-        import { supabase, requireAuth, isAdmin, formatDateTime, hackathonStatus } from './config.js';
+        import { supabase, formatDateTime, hackathonStatus } from './config.js';
 
         let adminUser;
 
         document.addEventListener('DOMContentLoaded', async () => {
-            adminUser = await requireAuth('index.html');
-            if(!adminUser) return;
-            const checkAdmin = await isAdmin(adminUser);
-            if(!checkAdmin) {
+            adminUser = JSON.parse(sessionStorage.getItem('hf_user'));
+            if (!adminUser) { window.location.href = 'index.html'; return; }
+            if (adminUser.role !== 'admin') {
                 alert("Unauthorized. Admin access only.");
                 window.location.href = 'dashboard.html';
                 return;
@@ -326,8 +321,8 @@
             initTabs();
             loadHackathonsList();
 
-            document.getElementById('logoutBtn').addEventListener('click', async () => {
-                await supabase.auth.signOut();
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                sessionStorage.removeItem('hf_user');
                 window.location.href = 'index.html';
             });
         });
@@ -702,8 +697,8 @@
             if(np.length < 6) return showToast('Password must be at least 6 characters', 'error');
             if(np !== cp) return showToast('Passwords do not match', 'error');
             
-            // Update in mock DB / Supabase admins table
-            const { error } = await supabase.from('admins').update({ password: np }).eq('email', adminUser.email);
+            // Update password_hash in admins table
+            const { error } = await supabase.from('admins').update({ password_hash: np }).eq('email', adminUser.email);
             if(error) return showToast(error.message, 'error');
             showToast('Password updated successfully!');
             document.getElementById('newPassInput').value = '';
@@ -716,7 +711,7 @@
             if(!email || !pass) return showToast('Email and password are required', 'error');
             if(pass.length < 6) return showToast('Password must be at least 6 characters', 'error');
 
-            const { error } = await supabase.from('admins').insert([{ email, password: pass, role: 'admin' }]);
+            const { error } = await supabase.from('admins').insert([{ email, password_hash: pass, role: 'admin' }]);
             if(error) return showToast(error.message, 'error');
             
             showToast(`Admin ${email} created!`);
