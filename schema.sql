@@ -1,13 +1,26 @@
 -- ============================================================
 -- HACKFEST — SUPABASE SCHEMA & RLS POLICIES
 -- Run this entire script in the Supabase SQL Editor
+-- WARNING: This version will DROP existing tables and recreate them.
 -- ============================================================
+
+-- 0. Cleanup existing objects
+DROP TABLE IF EXISTS submissions CASCADE;
+DROP TABLE IF EXISTS progress CASCADE;
+DROP TABLE IF EXISTS questions CASCADE;
+DROP TABLE IF EXISTS rounds CASCADE;
+DROP TABLE IF EXISTS hackathons CASCADE;
+DROP TABLE IF EXISTS team_members CASCADE;
+DROP TABLE IF EXISTS teams CASCADE;
+DROP TABLE IF EXISTS admins CASCADE;
+DROP FUNCTION IF EXISTS validate_answer CASCADE;
 
 -- 1. Create Tables
 
 CREATE TABLE admins (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email TEXT UNIQUE NOT NULL,
+    password TEXT, -- Used only for Local Mock mode
     role TEXT DEFAULT 'admin'
 );
 
@@ -154,20 +167,23 @@ ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 
--- Admins can do everything. Students essentially use an anon key
--- but operate based on email checks via Javascript initially.
--- To allow full frontend control over auth without custom JWTs initially, 
--- we will allow public read/write, but hide the `answer` column.
+-- Policies
 
--- TEMPORARY: Allow all select, insert, update for prototype speed
--- In production, replace `true` with `auth.uid() = ...`
 CREATE POLICY "Public Read Access" ON admins FOR SELECT USING (true);
+CREATE POLICY "Admins can manage admins" ON admins FOR ALL USING (true);
+
 CREATE POLICY "Public Read Access" ON teams FOR SELECT USING (true);
 CREATE POLICY "Public Insert Access" ON teams FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin Full Teams" ON teams FOR ALL USING (true);
+
 CREATE POLICY "Public Read Access" ON team_members FOR SELECT USING (true);
 CREATE POLICY "Public Insert Access" ON team_members FOR INSERT WITH CHECK (true);
+
 CREATE POLICY "Public Read Access" ON hackathons FOR SELECT USING (true);
+CREATE POLICY "Admin Full Hackathons" ON hackathons FOR ALL USING (true);
+
 CREATE POLICY "Public Read Access" ON rounds FOR SELECT USING (true);
+CREATE POLICY "Admin Full Rounds" ON rounds FOR ALL USING (true);
 
 -- PROGRESS table needs read/write
 CREATE POLICY "Public Select Progress" ON progress FOR SELECT USING (true);
@@ -179,15 +195,10 @@ CREATE POLICY "Public Select Submissions" ON submissions FOR SELECT USING (true)
 
 -- QUESTIONS: Hide the exact answer string from normal querying
 CREATE POLICY "Public Select Questions" ON questions FOR SELECT USING (true);
--- Note: 'answer' column will be selected, so it's up to the JS not to fetch it, 
--- or we use a view. But because they can view the network tab, this is why we 
--- use the `validate_answer` function above! 
-
--- Allow Admins full access
-CREATE POLICY "Admin Full Teams" ON teams FOR ALL USING (true);
-CREATE POLICY "Admin Full Hackathons" ON hackathons FOR ALL USING (true);
-CREATE POLICY "Admin Full Rounds" ON rounds FOR ALL USING (true);
 CREATE POLICY "Admin Full Questions" ON questions FOR ALL USING (true);
 
 -- Enable Realtime for Progress
-alter publication supabase_realtime add table progress;
+BEGIN;
+  DROP PUBLICATION IF EXISTS supabase_realtime;
+  CREATE PUBLICATION supabase_realtime FOR TABLE progress;
+COMMIT;

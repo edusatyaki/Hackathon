@@ -81,6 +81,7 @@ class MockSupabaseClient {
             },
             signOut: async () => {
                 localStorage.setItem('hf_mock_auth_user', null);
+                localStorage.removeItem('hf_manual_admin');
                 return { error: null };
             },
             getUser: async () => {
@@ -274,7 +275,13 @@ if(!isLiveSupabase) {
 
 export async function getCurrentUser() {
     const { data: { user } } = await supabase.auth.getUser();
-    return user;
+    if (user) return user;
+    
+    // Fallback: Check for a local "manual" admin session
+    const localAdmin = localStorage.getItem('hf_manual_admin');
+    if (localAdmin) return JSON.parse(localAdmin);
+    
+    return null;
 }
 
 export async function getCurrentTeam(user) {
@@ -290,6 +297,10 @@ export async function getCurrentTeam(user) {
 
 export async function isAdmin(user) {
     if (!user) return false;
+    
+    // If it's a manual admin session, it's already verified
+    if (user.role === 'admin' && user.manual) return true;
+
     const { data } = await supabase
         .from('admins')
         .select('id')
@@ -327,6 +338,12 @@ export async function signInWithGoogle() {
         },
     });
     return { data, error };
+}
+
+export async function signOut() {
+    await supabase.auth.signOut();
+    localStorage.removeItem('hf_manual_admin');
+    window.location.href = 'index.html';
 }
 
 // ============================================================

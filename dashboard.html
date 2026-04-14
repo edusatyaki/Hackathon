@@ -141,7 +141,7 @@
     </main>
 
     <script type="module">
-        import { supabase, requireAuth, getCurrentTeam, hackathonStatus } from './config.js';
+        import { supabase, requireAuth, getCurrentTeam, hackathonStatus, signOut } from './config.js';
 
         let user, team;
 
@@ -167,10 +167,7 @@
             await loadDashboardData();
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
-        });
+        document.getElementById('logoutBtn').addEventListener('click', signOut);
 
         async function loadDashboardData() {
             // Fetch all hackathons with count

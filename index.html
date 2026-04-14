@@ -215,8 +215,8 @@
         // Admin Login
         adminForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value.trim();
             const btn = document.getElementById('adminSubmitBtn');
             errorAlert.classList.add('hidden');
 
@@ -224,15 +224,25 @@
             btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> ACCESSING...';
 
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
+                // 1. Query the 'admins' table for exact email (case-insensitive) and password match
+                const { data: adminCheck, error } = await supabase
+                    .from('admins')
+                    .select('*')
+                    .ilike('email', email)
+                    .eq('password', password)
+                    .single();
 
-                // Validate admin row
-                const { data: adminCheck } = await supabase.from('admins').select('id').eq('email', email).single();
-                if (!adminCheck) {
-                    await supabase.auth.signOut();
-                    throw new Error("Unauthorized. Admin access required.");
+                if (error || !adminCheck) {
+                    throw new Error("Invalid admin credentials or account does not exist.");
                 }
+
+                // 2. Clear Google session if any, and set manual admin session
+                await supabase.auth.signOut();
+                localStorage.setItem('hf_manual_admin', JSON.stringify({
+                    email: adminCheck.email,
+                    role: 'admin',
+                    manual: true
+                }));
 
                 window.location.href = 'admin.html';
             } catch (err) {
