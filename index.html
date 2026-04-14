@@ -128,17 +128,36 @@
                 </div>
 
                 <!-- ADMIN LOGIN FORM -->
-                <div id="adminForm" class="space-y-6 hidden">
-                    <div class="bg-surface-container-low p-6 rounded-xl border border-secondary text-center">
-                        <span class="material-symbols-outlined text-secondary text-4xl mb-4">admin_panel_settings</span>
-                        <h4 class="text-title text-secondary mb-2">System Administrator</h4>
-                        <p class="text-xs text-on-surface-variant mb-6">Access restricted to verified administrative Google accounts.</p>
-                        
-                        <button type="button" class="btn btn-secondary btn-lg btn-full shadow-lg shadow-secondary/20 flex items-center justify-center gap-3" id="googleAdminBtn">
-                            SYSTEM ACCESS WITH GOOGLE
-                        </button>
+                <form id="adminForm" class="space-y-5 hidden">
+                    <div class="form-group">
+                        <label class="form-label">Admin Identity</label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">admin_panel_settings</span>
+                            <input type="email" id="adminEmail" class="form-input" placeholder="admin@hackfest.com"
+                                required>
+                        </div>
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Security Key</label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">key</span>
+                            <input type="password" id="adminPassword" class="form-input" placeholder="••••••••"
+                                required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-lg btn-full mt-2" id="adminSubmitBtn">SYSTEM ACCESS</button>
+
+                    <div class="flex items-center gap-4 my-6">
+                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
+                        <span class="text-[10px] text-outline uppercase tracking-widest font-bold">OR</span>
+                        <div class="h-[1px] bg-outline-variant flex-grow"></div>
+                    </div>
+
+                    <button type="button" class="btn btn-ghost btn-full border-outline text-on-surface hover:bg-surface-container-high transition-all flex items-center justify-center gap-3" id="googleAdminBtn">
+                        <img src="https://www.google.com/favicon.ico" alt="Google" class="w-4 h-4">
+                        SYSTEM ACCESS WITH GOOGLE
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -192,6 +211,38 @@
             errorAlert.textContent = msg;
             errorAlert.classList.remove('hidden');
         }
+
+        // Admin Login
+        const adminForm = document.getElementById('adminForm');
+        adminForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const btn = document.getElementById('adminSubmitBtn');
+            errorAlert.classList.add('hidden');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> ACCESSING...';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+
+                // Validate admin row
+                const { data: adminCheck } = await supabase.from('admins').select('id').eq('email', email).single();
+                if (!adminCheck) {
+                    await supabase.auth.signOut();
+                    throw new Error("Unauthorized. Admin access required.");
+                }
+
+                window.location.href = 'admin.html';
+            } catch (err) {
+                showError(err.message || 'Admin login failed.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'SYSTEM ACCESS';
+            }
+        });
 
         // Google Auth Click Handlers
         [document.getElementById('googleTeamBtn'), document.getElementById('googleAdminBtn')].forEach(btn => {
