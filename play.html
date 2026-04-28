@@ -254,6 +254,10 @@
             ui.answerInput.type = (qData.answer_type === 'integer' || qData.answer_type === 'decimal') ? 'number' : 'text';
             if(qData.answer_type === 'decimal') ui.answerInput.step = 'any';
 
+            // Always restore submit button to its default state for the new round
+            ui.submitBtn.disabled = false;
+            ui.submitBtn.innerHTML = `EXECUTE SEQUENCE <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">terminal</span>`;
+
             ui.loader.classList.add('hidden');
             ui.main.classList.remove('hidden');
         }
