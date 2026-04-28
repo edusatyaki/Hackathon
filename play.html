@@ -133,6 +133,7 @@
         let roundsData = [];
         let currentQuestion = null;
         let timerInterval;
+        let isSubmitting = false; // Guard flag to prevent duplicate submissions
 
         const ui = {
             loader: document.getElementById('pageLoader'),
@@ -259,13 +260,19 @@
 
         ui.submitForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Prevent duplicate submissions from rapid clicking
+            if (isSubmitting) return;
+
             const answer = ui.answerInput.value.trim();
             if(!answer) return;
 
+            isSubmitting = true;
             ui.submitBtn.disabled = true;
             ui.submitBtn.innerHTML = '<span class="material-symbols-outlined justify-center mx-auto animate-spin">refresh</span>';
             ui.feedbackAlert.classList.add('hidden');
 
+            let wasCorrect = false;
             try {
                 // Call Supabase Postgres Function
                 const { data: isCorrect, error } = await supabase.rpc('validate_answer', {
@@ -281,16 +288,21 @@
                 const icon = ui.feedbackAlert.querySelector('.material-symbols-outlined');
 
                 if (isCorrect) {
+                    wasCorrect = true;
                     ui.feedbackAlert.classList.add('correct');
                     icon.textContent = 'check_circle';
                     ui.feedbackText.textContent = 'Execution successful. Access granted.';
                     
                     fireConfetti();
                     
-                    // Increment local progress and load next round
+                    // Increment local progress by exactly 1 and load next round.
+                    // isSubmitting stays true here so no further clicks can fire.
                     progressData.current_round += 1;
-                    progressData.last_updated = new Date().toISOString(); // local update for accurate completion timer
-                    setTimeout(() => { loadRound(progressData.current_round); }, 1500);
+                    progressData.last_updated = new Date().toISOString();
+                    setTimeout(() => {
+                        isSubmitting = false; // Only release the guard when next round begins loading
+                        loadRound(progressData.current_round);
+                    }, 1500);
 
                 } else {
                     ui.feedbackAlert.classList.add('wrong');
@@ -302,8 +314,12 @@
                 console.error(err);
                 alert("Validation error. Check console.");
             } finally {
-                ui.submitBtn.disabled = false;
-                ui.submitBtn.innerHTML = `EXECUTE SEQUENCE <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">terminal</span>`;
+                // Only re-enable button if the answer was wrong (correct path waits for setTimeout)
+                if (!wasCorrect) {
+                    isSubmitting = false;
+                    ui.submitBtn.disabled = false;
+                    ui.submitBtn.innerHTML = `EXECUTE SEQUENCE <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">terminal</span>`;
+                }
             }
         });
 
